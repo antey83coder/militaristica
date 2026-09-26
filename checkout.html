@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Militaristica — Оформлення замовлення</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+        body {
+            background-color: #2b3028;
+            color: #ffffff;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ХЕДЕР */
+        header {
+            background-color: #1f241d;
+            padding: 10px 20px;
+            border-bottom: 3px solid #a33333;
+            min-height: 85px;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-container {
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .war-day {
+            background-color: #a33333;
+            padding: 9px 14px;
+            font-weight: bold;
+            font-size: 14px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .menu-wrapper {
+            position: relative;
+        }
+
+        .menu-btn {
+            background: none;
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .menu-btn:hover {
+            background-color: #ffffff;
+            color: #1f241d;
+        }
+
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #1f241d;
+            border: 1px solid #4a5444;
+            border-radius: 4px;
+            margin-top: 10px;
+            min-width: 220px;
+            z-index: 100;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+        }
+
+        .menu-dropdown a {
+            display: block;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: bold;
+            border-bottom: 1px solid #2b3028;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .menu-dropdown a:hover {
+            background-color: #a33333;
+            color: #ffffff;
+        }
+
+        .menu-dropdown a:last-child {
+            border-bottom: none;
+        }
+
+        .header-center {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .header-center a {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-center img {
+            max-height: 48px;
+            width: auto;
+            opacity: 0.45;
+            transition: opacity 0.3s;
+        }
+
+        .header-center img:hover {
+            opacity: 0.9;
+        }
+
+        .slogan {
+            font-size: 10px;
+            color: #cccccc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+
+        .actions-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .site-search-input {
+            background-color: #242922;
+            border: 2px solid #5a6353;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            width: 150px;
+            outline: none;
+            transition: width 0.3s, border-color 0.2s;
+        }
+
+        .site-search-input:focus {
+            width: 200px;
+            border-color: #a33333;
+        }
+
+        .site-search-input::placeholder {
+            color: #888888;
+        }
+
+        .btn {
+            background-color: #3b4238;
+            color: white;
+            border: 2px solid #5a6353;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn-donate {
+            background-color: #a33333;
+            border-color: #b53b3b;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .thick-line {
+            height: 6px;
+            background-color: #1a1e18;
+            border: none;
+            margin: 0;
+        }
+
+        /* НЕСКІНЧЕННА СТРІЧКА З ЕМБЛЕМАМИ */
+        .scroll-strip {
+            background-color: #242922;
+            padding: 12px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            border-bottom: 2px solid #3b4238;
+            position: relative;
+            width: 100%;
+        }
+
+        .scroll-track {
+            display: inline-flex;
+            gap: 15px;
+            animation: infiniteScroll 60s linear infinite;
+            align-items: center;
+        }
+
+        .scroll-logo-item {
+            background-color: #31382f;
+            border: 1px solid #4a5444;
+            padding: 3px 8px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 38px;
+            min-width: 45px;
+        }
+
+        .scroll-logo-item img {
+            height: 32px;
+            width: auto;
+            display: block;
+            border-radius: 2px;
+            object-fit: contain;
+        }
+
+        @keyframes infiniteScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* СТРІЧКА КАТЕГОРІЙ МАГАЗИНУ */
+        .shop-categories-container {
+            background-color: #242922;
+            border-bottom: 2px solid #3b4238;
+            padding: 15px 20px;
+            overflow-x: auto;
+        }
+
+        .shop-categories-track {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .cat-card {
+            background-color: #31382f;
+            border: 1px solid #4a5444;
+            border-radius: 6px;
+            padding: 8px 6px;
+            text-align: center;
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: bold;
+            flex: 1;
+            min-width: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .cat-card:hover {
+            background-color: #a33333;
+            border-color: #b53b3b;
+        }
+
+        .cat-img-box {
+            width: 75px;
+            height: 85px;
+            background-color: #242922;
+            border: 1px solid #4a5444;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .cat-img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 3px;
+        }
+
+        /* ОСНОВНИЙ КОНТЕНТ (ЧЕКАУТ) */
+        main {
+            padding: 30px 20px 50px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffffff;
+            text-transform: uppercase;
+            margin: 0 0 25px 0;
+            letter-spacing: 1px;
+        }
+
+        .checkout-wrapper {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        /* Ліва колонка */
+        .checkout-forms {
+            flex: 2;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-section {
+            background-color: #242922;
+            border: 1px solid #3b4238;
+            border-radius: 6px;
+            padding: 25px;
+        }
+
+        .form-section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #e06c75;
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #4a5444;
+            padding-bottom: 10px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            color: #cccccc;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #1f241d;
+            border: 1px solid #4a5444;
+            color: #ffffff;
+            padding: 12px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: #a33333;
+        }
+
+        .form-input::placeholder {
+            color: #666666;
+        }
+
+        /* Радіокнопки */
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #1f241d;
+            border: 1px solid #4a5444;
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .radio-option:hover {
+            border-color: #a33333;
+        }
+
+        .radio-option input[type="radio"] {
+            accent-color: #a33333;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .radio-option-text {
+            font-size: 14px;
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .radio-option-desc {
+            font-size: 12px;
+            color: #888888;
+            margin-left: 26px;
+            margin-top: 4px;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+
+        .checkbox-option input[type="checkbox"] {
+            accent-color: #a33333;
+            width: 16px;
+            height: 16px;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+        .checkbox-text {
+            font-size: 13px;
+            color: #cccccc;
+            line-height: 1.4;
+        }
+
+        .highlight-text {
+            color: #e06c75;
+            font-weight: bold;
+        }
+
+        /* Форма оплати картою */
+        .card-details-box {
+            background-color: #1a1e18;
+            border: 1px solid #4a5444;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-icons {
+            display: flex;
+            gap: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #aaaaaa;
+            margin-bottom: 5px;
+        }
+
+        .card-badge {
+            background-color: #2b3028;
+            border: 1px solid #4a5444;
+            padding: 3px 8px;
+            border-radius: 3px;
+        }
+
+        /* Права колонка */
+        .checkout-summary {
+            flex: 1;
+            min-width: 300px;
+            background-color: #1f241d;
+            border: 2px solid #3b4238;
+            border-radius: 6px;
+            padding: 25px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .summary-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .summary-items {
+            border-bottom: 1px solid #4a5444;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #cccccc;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .summary-item-title {
+            padding-right: 15px;
+        }
+
+        .summary-item-price {
+            font-weight: bold;
+            color: #ffffff;
+            white-space: nowrap;
+        }
+
+        .summary-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            margin-bottom: 25px;
+        }
+
+        .summary-total-label {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .summary-total-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e06c75;
+        }
+
+        .submit-order-btn {
+            width: 100%;
+            background-color: #a33333;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .submit-order-btn:hover {
+            background-color: #b53b3b;
+        }
+
+        .promo-code-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .promo-input {
+            flex: 1;
+            background-color: #2b3028;
+            border: 1px solid #4a5444;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .promo-btn {
+            background-color: #3b4238;
+            color: white;
+            border: 1px solid #5a6353;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .promo-btn:hover {
+            background-color: #4a5444;
+        }
+
+        /* ФУТЕР */
+        footer {
+            background-color: #1f241d;
+            border-top: 6px solid #1a1e18;
+            padding: 15px 20px;
+            margin-top: 20px;
+        }
+
+        .footer-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .social-icon-btn {
+            background-color: #31382f;
+            border: 1px solid #5a6353;
+            padding: 4px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .social-icon-btn img {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .social-icon-btn:hover {
+            background-color: #a33333;
+            border-color: #b53b3b;
+        }
+
+        .footer-contact-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .phone-link {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            background-color: #31382f;
+            border: 1px solid #5a6353;
+            padding: 5px 12px;
+            border-radius: 4px;
+        }
+
+        .messengers-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .messenger-icon {
+            background-color: #2b3028;
+            border: 1px solid #4a5444;
+            padding: 3px;
+            border-radius: 3px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            transition: border-color 0.2s;
+        }
+
+        .messenger-icon img {
+            width: 14px;
+            height: 14px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .messenger-icon:hover {
+            border-color: #a33333;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <div class="header-left">
+                <div class="war-day" id="war-day-counter">День війни: 0</div>
+                <div class="menu-wrapper">
+                    <button class="menu-btn" onclick="toggleMenuDropdown(event)">Меню</button>
+                    <div class="menu-dropdown" id="menuDropdown">
+                        <a href="index.html">Головна сторінка</a>
+                        <a href="shop.html">Каталог магазину</a>
+                        <a href="cart.html">Кошик</a>
+                        <a href="profile.html">Мій профіль</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-center">
+                <a href="index.html">
+                    <img src="logo.jpg" alt="Militaristica Logo">
+                    <div class="slogan">Дій впевнено і будь готовий</div>
+                </a>
+            </div>
+
+            <div class="actions-bar">
+                <input type="text" id="siteSearchInput" class="site-search-input" placeholder="🔍 Пошук по сайту..." onkeypress="handleSiteSearch(event)">
+                <a href="auth.html" class="btn">Вхід / Реєстрація</a>
+                <a href="donate.html" class="btn btn-donate">ДОНАТ</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Стрічка родів військ -->
+    <div class="scroll-strip">
+        <div class="scroll-track">
+            <div class="scroll-logo-item"><img src="forses_logos/paratroop_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/sbs_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/suhoput_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/sso_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/morines_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/ppo_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/gur_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/ing_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/tank_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/mech_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/ng_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/arta_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/med_logo.jpg" alt=""></div>
+            
+            <div class="scroll-logo-item"><img src="forses_logos/paratroop_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/sbs_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/suhoput_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/sso_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/morines_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/ppo_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/gur_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/ing_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/tank_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/mech_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/ng_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/arta_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/med_logo.jpg" alt=""></div>
+        </div>
+    </div>
+
+    <hr class="thick-line">
+
+    <!-- Стрічка категорій магазину -->
+    <div class="shop-categories-container">
+        <div class="shop-categories-track">
+            <a href="mil_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/mil_goods.jpg" alt=""></div>
+                <span>Військова справа і екіпірування</span>
+            </a>
+            <a href="sport_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/sport_goods.jpg" alt=""></div>
+                <span>Спорт і здоров'я</span>
+            </a>
+            <a href="tour_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/tour_goods.jpg" alt=""></div>
+                <span>Туризм і походи</span>
+            </a>
+            <a href="work_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/work_goods.jpg" alt=""></div>
+                <span>Техніка та засоби</span>
+            </a>
+            <a href="trans_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/trans_goods.jpg" alt=""></div>
+                <span>Транспорт</span>
+            </a>
+            <a href="drone_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/drone_goods.jpg" alt=""></div>
+                <span>Дрони, запчастини</span>
+            </a>
+            <a href="com_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/com_goods.jpg" alt=""></div>
+                <span>Електроніка і зв'язок</span>
+            </a>
+            <a href="2hetd_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/2hetd_goods.jpg" alt=""></div>
+                <span>Барахолка</span>
+            </a>
+        </div>
+    </div>
+
+    <main>
+        <h1 class="section-title">Оформлення замовлення</h1>
+        
+        <div class="checkout-wrapper">
+            
+            <!-- ЛІВА КОЛОНКА -->
+            <div class="checkout-forms">
+                
+                <!-- Блок 1: Контакти -->
+                <div class="form-section">
+                    <h2 class="form-section-title">1. Ваші контактні дані</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">ПІБ або Позивний *</label>
+                            <input type="text" class="form-input" placeholder="Як до вас звертатися?">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Номер телефону *</label>
+                            <input type="tel" class="form-input" placeholder="+380...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email (для відправки чеку)</label>
+                        <input type="email" class="form-input" placeholder="example@mail.com">
+                    </div>
+                    
+                    <label class="checkbox-option">
+                        <input type="checkbox">
+                        <span class="checkbox-text">Створити акаунт для зручних покупок у майбутньому та збереження історії. Пароль буде надіслано на email.</span>
+                    </label>
+                    <label class="checkbox-option">
+                        <input type="checkbox">
+                        <span class="checkbox-text highlight-text">Я є діючим військовослужбовцем Сил Оборони України (можлива додаткова знижка або пріоритетна обробка замовлення).</span>
+                    </label>
+                </div>
+
+                <!-- Блок 2: Доставка -->
+                <div class="form-section">
+                    <h2 class="form-section-title">2. Спосіб доставки</h2>
+                    
+                    <label class="radio-option">
+                        <input type="radio" name="delivery" checked>
+                        <div>
+                            <div class="radio-option-text">Нова Пошта (до відділення або поштомату)</div>
+                        </div>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="delivery">
+                        <div>
+                            <div class="radio-option-text">Укрпошта (до відділення або поштомату)</div>
+                        </div>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="delivery">
+                        <div>
+                            <div class="radio-option-text">Самовивіз (м. Київ)</div>
+                        </div>
+                    </label>
+
+                    <div class="form-row" style="margin-top: 15px;">
+                        <div class="form-group">
+                            <label class="form-label">Місто / Населений пункт *</label>
+                            <input type="text" class="form-input" placeholder="Почніть вводити назву міста...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Номер відділення або поштомату *</label>
+                            <input type="text" class="form-input" placeholder="№ відділення / поштомату">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Блок 3: Оплата -->
+                <div class="form-section">
+                    <h2 class="form-section-title">3. Спосіб оплати</h2>
+                    
+                    <!-- Звичайна оплата картою -->
+                    <label class="radio-option" onclick="toggleCardForm(true)">
+                        <input type="radio" name="payment" id="pay-card" checked>
+                        <div>
+                            <div class="radio-option-text">Оплата картою онлайн (Visa, Mastercard, ПРОСТІР)</div>
+                            <div class="radio-option-desc">Миттєва та безпечна оплата без додаткових комісій за переказ.</div>
+                        </div>
+                    </label>
+
+                    <!-- Блок введення банківської карти -->
+                    <div class="card-details-box" id="cardDetailsBox">
+                        <div class="card-icons">
+                            <span class="card-badge">💳 Visa</span>
+                            <span class="card-badge">💳 Mastercard</span>
+                            <span class="card-badge">💳 ПРОСТІР</span>
+                            <span class="card-badge">📱 Google Pay / Apple Pay</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Номер банківської карти *</label>
+                            <input type="text" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
+                        </div>
+                        <div class="form-row" style="margin-bottom: 0;">
+                            <div class="form-group">
+                                <label class="form-label">Термін дії (ММ/РР) *</label>
+                                <input type="text" class="form-input" placeholder="12/28" maxlength="5">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">CVV / CVC (3 цифри) *</label>
+                                <input type="password" class="form-input" placeholder="•••" maxlength="3">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Оплата при отриманні -->
+                    <label class="radio-option" onclick="toggleCardForm(false)" style="margin-top: 10px;">
+                        <input type="radio" name="payment" id="pay-cod">
+                        <div>
+                            <div class="radio-option-text">Накладений платіж (Оплата при отриманні)</div>
+                            <div class="radio-option-desc">Комісію за переказ коштів сплачує покупець згідно з тарифами пошти.</div>
+                        </div>
+                    </label>
+
+                    <!-- Реквізити IBAN -->
+                    <label class="radio-option" onclick="toggleCardForm(false)">
+                        <input type="radio" name="payment" id="pay-iban">
+                        <div>
+                            <div class="radio-option-text">Оплата за реквізитами ФОП (IBAN)</div>
+                            <div class="radio-option-desc">Реквізити для оплати будуть надіслані вам після підтвердження наявності товару.</div>
+                        </div>
+                    </label>
+                </div>
+
+            </div>
+
+            <!-- ПРАВА КОЛОНКА - ПІДСУМОК -->
+            <div class="checkout-summary">
+                <h3 class="summary-title">ВАШЕ ЗАМОВЛЕННЯ</h3>
+                
+                <div class="summary-items">
+                    <div class="summary-item">
+                        <div class="summary-item-title">1x Тактичний рюкзак 45L (Піксель)</div>
+                        <div class="summary-item-price">2 450 грн</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-item-title">2x Ліхтарик налобний акумуляторний</div>
+                        <div class="summary-item-price">1 780 грн</div>
+                    </div>
+                </div>
+
+                <div class="promo-code-box">
+                    <input type="text" class="promo-input" placeholder="Промокод (за наявності)">
+                    <button class="promo-btn">ЗАСТОСУВАТИ</button>
+                </div>
+
+                <div class="summary-item">
+                    <div>Сума товарів:</div>
+                    <div>4 230 грн</div>
+                </div>
+                <div class="summary-item">
+                    <div>Вартість доставки:</div>
+                    <div>За тарифами перевізника</div>
+                </div>
+
+                <div class="summary-total-row">
+                    <div class="summary-total-label">ДО СПЛАТИ:</div>
+                    <div class="summary-total-value">4 230 грн</div>
+                </div>
+
+                <!-- ПЕРЕХІД НА СТОРІНКУ УСПІШНОГО ЗАМОВЛЕННЯ -->
+                <button class="submit-order-btn" onclick="window.location.href='success.html'">ОПЛАТИТИ ТА ЗАМОВИТИ</button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ФУТЕР -->
+    <footer>
+        <div class="footer-content">
+            <a href="auth.html" class="btn" style="font-size: 13px; padding: 7px 14px;">Реєстрація / Вхід</a>
+            <a href="shop.html" class="btn" style="background-color: #31382f; font-size: 13px; padding: 7px 16px; border-color: #5a6353;">МАГАЗИН</a>
+
+            <div class="footer-socials">
+                <a href="#" class="social-icon-btn"><img src="sn_logos/youtube_logo.jpg" alt="Ютуб"></a>
+                <a href="#" class="social-icon-btn"><img src="sn_logos/facebook_logo.jpg" alt="Фейсбук"></a>
+                <a href="#" class="social-icon-btn"><img src="sn_logos/insta_logo.jpg" alt="Інстаграм"></a>
+                <a href="#" class="social-icon-btn"><img src="sn_logos/tik_tok_logo.jpg" alt="Тік-Ток"></a>
+                <a href="#" class="social-icon-btn"><img src="sn_logos/linkedin_logo.jpg" alt="ЛінкедІн"></a>
+            </div>
+
+            <div class="footer-contact-block">
+                <a href="tel:+380000000000" class="phone-link">+38 (000) 000-00-00</a>
+                <div class="messengers-row">
+                    <a href="#" class="messenger-icon"><img src="sn_logos/viber_logo.jpg" alt="Вайбер"></a>
+                    <a href="#" class="messenger-icon"><img src="sn_logos/watsapp_logo.jpg" alt="Ватсапп"></a>
+                    <a href="#" class="messenger-icon"><img src="sn_logos/Telegram_logo.jpg" alt="Телеграм"></a>
+                    <a href="#" class="messenger-icon"><img src="sn_logos/Signal_logo.jpg" alt="Сигнал"></a>
+                    <a href="#" class="messenger-icon"><img src="sn_logos/fbmess_logo.jpg" alt="ФБ"></a>
+                </div>
+            </div>
+
+            <a href="donate.html" class="btn btn-donate" style="font-size: 13px; padding: 7px 18px;">ДОНАТ</a>
+        </div>
+    </footer>
+
+    <script>
+        function updateWarDay() {
+            const startDate = new Date('2022-02-24');
+            const today = new Date();
+            const diffTime = today - startDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            document.getElementById('war-day-counter').innerText = `День війни: ${diffDays}`;
+        }
+        updateWarDay();
+
+        function toggleMenuDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('menuDropdown');
+            if (dropdown.style.display === 'block') {
+                dropdown.style.display = 'none';
+            } else {
+                dropdown.style.display = 'block';
+            }
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.menu-btn')) {
+                const dropdown = document.getElementById('menuDropdown');
+                if (dropdown && dropdown.style.display === 'block') {
+                    dropdown.style.display = 'none';
+                }
+            }
+        }
+
+        function handleSiteSearch(event) {
+            if (event.key === 'Enter') {
+                let query = document.getElementById('siteSearchInput').value.trim();
+                if (query) {
+                    window.location.href = `shop.html?search=${encodeURIComponent(query)}`;
+                }
+            }
+        }
+
+        // Перемикач відображення форми банківської картки
+        function toggleCardForm(show) {
+            const cardBox = document.getElementById('cardDetailsBox');
+            if (show) {
+                cardBox.style.display = 'flex';
+            } else {
+                cardBox.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

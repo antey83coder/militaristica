@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Militaristica — Користувачі</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: #e0e0e0; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 250px; background-color: #1e1e1e; border-right: 1px solid #333; display: flex; flex-direction: column; }
+        .sidebar-logo { padding: 20px; text-align: center; border-bottom: 1px solid #333; }
+        .sidebar-logo img { max-width: 80%; }
+        .sidebar-menu { display: flex; flex-direction: column; padding: 10px 0; flex-grow: 1; }
+        .menu-item { padding: 15px 20px; color: #aaa; text-decoration: none; border-left: 4px solid transparent; transition: 0.3s; }
+        .menu-item:hover, .menu-item.active { background-color: #282c34; color: #fff; border-left-color: #e06c75; }
+        .sidebar-bottom { padding: 20px; border-top: 1px solid #333; }
+        .btn-logout { width: 100%; padding: 12px; background-color: transparent; border: 1px solid #a33333; color: #e06c75; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.3s; }
+        .btn-logout:hover { background-color: #a33333; color: white; }
+
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .topbar { background-color: #1e1e1e; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        .topbar-title { font-size: 20px; font-weight: bold; color: #fff; text-transform: uppercase; }
+        
+        .content-area { padding: 30px; }
+        table { width: 100%; border-collapse: collapse; background-color: #1e1e1e; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #333; }
+        th { background-color: #282c34; color: #aaa; }
+        select, input { padding: 5px; background: #121212; color: white; border: 1px solid #444; border-radius: 4px; }
+        .btn-green { background-color: #98c379; color: #121212; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div>
+            <div class="sidebar-logo"><img src="logo.jpg" alt="Logo"></div>
+            <div class="sidebar-menu">
+                <a href="admin_dashboard.html" class="menu-item">📊 Головна (Дашборд)</a>
+                <a href="admin_orders.html" class="menu-item">📦 Замовлення</a>
+                <a href="admin_products.html" class="menu-item">🛍️ Товари</a>
+                <a href="admin_users.html" class="menu-item active">👥 Користувачі</a>
+            </div>
+        </div>
+        <div class="sidebar-bottom">
+            <button class="btn-logout" onclick="logout()">ВИЙТИ</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <div class="topbar-title">База користувачів</div>
+            <div id="topUserName" style="color: #aaa;"></div>
+        </div>
+
+        <div class="content-area">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Ім'я та Email</th>
+                        <th>Роль на сайті</th>
+                        <th>Військове Звання</th>
+                        <th>Знижка (%)</th>
+                        <th>Дії</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <!-- Дані з БД -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let user = JSON.parse(localStorage.getItem('militaristica_user'));
+        
+        // СЮДИ ПУСКАЄМО ТІЛЬКИ ГОЛОВНОГО АДМІНА!
+        if (!user || user.role !== 'admin') { 
+            alert("Ця сторінка лише для Головного Адміністратора!");
+            window.location.href = 'admin_dashboard.html'; 
+        }
+
+        document.getElementById('topUserName').innerText = `Привіт, ${user.name}`;
+
+        // ЗАВАНТАЖУЄМО З БД
+        async function loadUsers() {
+            try {
+                let res = await fetch('/api/users');
+                let users = await res.json();
+                
+                let html = '';
+                users.forEach(u => {
+                    html += `
+                        <tr>
+                            <td>#${u.id}</td>
+                            <td><strong>${u.name}</strong><br><small style="color:#888;">${u.email}</small></td>
+                            <td>
+                                <select id="role_${u.id}">
+                                    <option value="user" ${u.role==='user'?'selected':''}>Покупець</option>
+                                    <option value="seller" ${u.role==='seller'?'selected':''}>Продавець</option>
+                                    <option value="admin" ${u.role==='admin'?'selected':''}>Адміністратор</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select id="rank_${u.id}">
+                                    <option value="Рекрут" ${u.rank==='Рекрут'?'selected':''}>Рекрут</option>
+                                    <option value="Солдат" ${u.rank==='Солдат'?'selected':''}>Солдат</option>
+                                    <option value="Сержант" ${u.rank==='Сержант'?'selected':''}>Сержант</option>
+                                </select>
+                            </td>
+                            <td><input type="number" id="disc_${u.id}" value="${u.discount}" style="width: 60px;"></td>
+                            <td>
+                                <button class="btn-green" onclick="saveUser(${u.id})">Зберегти</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('usersTableBody').innerHTML = html;
+            } catch (err) { console.error(err); }
+        }
+
+        // ЗБЕРІГАЄМО ЗМІНИ В БД
+        async function saveUser(id) {
+            let role = document.getElementById(`role_${id}`).value;
+            let rank = document.getElementById(`rank_${id}`).value;
+            let discount = document.getElementById(`disc_${id}`).value;
+
+            let formData = new FormData();
+            formData.append("role", role);
+            formData.append("rank", rank);
+            formData.append("discount", discount);
+
+            try {
+                let res = await fetch(`/api/users/update/${id}`, { method: 'POST', body: formData });
+                if (res.ok) alert("Дані користувача оновлено в базі!");
+                else alert("Помилка!");
+            } catch (err) { console.error(err); }
+        }
+
+        function logout() { localStorage.removeItem('militaristica_user'); window.location.href = 'index.html'; }
+
+        document.addEventListener("DOMContentLoaded", loadUsers);
+    </script>
+</body>
+</html>

@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Militaristica — Замовлення прийнято</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+        body {
+            background-color: #2b3028;
+            color: #ffffff;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ХЕДЕР */
+        header {
+            background-color: #1f241d;
+            padding: 10px 20px;
+            border-bottom: 3px solid #a33333;
+            min-height: 85px;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-container {
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .war-day {
+            background-color: #a33333;
+            padding: 9px 14px;
+            font-weight: bold;
+            font-size: 14px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .menu-wrapper {
+            position: relative;
+        }
+
+        .menu-btn {
+            background: none;
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .menu-btn:hover {
+            background-color: #ffffff;
+            color: #1f241d;
+        }
+
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #1f241d;
+            border: 1px solid #4a5444;
+            border-radius: 4px;
+            margin-top: 10px;
+            min-width: 220px;
+            z-index: 100;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+        }
+
+        .menu-dropdown a {
+            display: block;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: bold;
+            border-bottom: 1px solid #2b3028;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .menu-dropdown a:hover {
+            background-color: #a33333;
+            color: #ffffff;
+        }
+
+        .menu-dropdown a:last-child {
+            border-bottom: none;
+        }
+
+        .header-center {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .header-center a {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-center img {
+            max-height: 48px;
+            width: auto;
+            opacity: 0.45;
+            transition: opacity 0.3s;
+        }
+
+        .header-center img:hover {
+            opacity: 0.9;
+        }
+
+        .slogan {
+            font-size: 10px;
+            color: #cccccc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+
+        .actions-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .site-search-input {
+            background-color: #242922;
+            border: 2px solid #5a6353;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            width: 150px;
+            outline: none;
+            transition: width 0.3s, border-color 0.2s;
+        }
+
+        .site-search-input:focus {
+            width: 200px;
+            border-color: #a33333;
+        }
+
+        .site-search-input::placeholder {
+            color: #888888;
+        }
+
+        .btn {
+            background-color: #3b4238;
+            color: white;
+            border: 2px solid #5a6353;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn-donate {
+            background-color: #a33333;
+            border-color: #b53b3b;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .thick-line {
+            height: 6px;
+            background-color: #1a1e18;
+            border: none;
+            margin: 0;
+        }
+
+        /* НЕСКІНЧЕННА СТРІЧКА З ЕМБЛЕМАМИ */
+        .scroll-strip {
+            background-color: #242922;
+            padding: 12px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            border-bottom: 2px solid #3b4238;
+            position: relative;
+            width: 100%;
+        }
+
+        .scroll-track {
+            display: inline-flex;
+            gap: 15px;
+            animation: infiniteScroll 60s linear infinite;
+            align-items: center;
+        }
+
+        .scroll-logo-item {
+            background-color: #31382f;
+            border: 1px solid #4a5444;
+            padding: 3px 8px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 38px;
+            min-width: 45px;
+        }
+
+        .scroll-logo-item img {
+            height: 32px;
+            width: auto;
+            display: block;
+            border-radius: 2px;
+            object-fit: contain;
+        }
+
+        @keyframes infiniteScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* СТРІЧКА КАТЕГОРІЙ МАГАЗИНУ */
+        .shop-categories-container {
+            background-color: #242922;
+            border-bottom: 2px solid #3b4238;
+            padding: 15px 20px;
+            overflow-x: auto;
+        }
+
+        .shop-categories-track {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .cat-card {
+            background-color: #31382f;
+            border: 1px solid #4a5444;
+            border-radius: 6px;
+            padding: 8px 6px;
+            text-align: center;
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: bold;
+            flex: 1;
+            min-width: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .cat-card:hover {
+            background-color: #a33333;
+            border-color: #b53b3b;
+        }
+
+        .cat-img-box {
+            width: 75px;
+            height: 85px;
+            background-color: #242922;
+            border: 1px solid #4a5444;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .cat-img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 3px;
+        }
+
+        /* ОСНОВНИЙ КОНТЕНТ (УСПІШНЕ ЗАМОВЛЕННЯ) */
+        main {
+            padding: 60px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+            text-align: center;
+            min-height: 50vh;
+        }
+
+        .success-icon {
+            font-size: 70px;
+            margin-bottom: 20px;
+            color: #4a5444;
+        }
+
+        .success-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #e06c75;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .order-number {
+            font-size: 18px;
+            color: #cccccc;
+            margin-bottom: 15px;
+        }
+
+        .order-number strong {
+            color: #ffffff;
+            font-size: 22px;
+        }
+
+        .success-desc {
+            font-size: 15px;
+            color: #888888;
+            max-width: 600px;
+            margin: 0 auto 40px auto;
+            line-height: 1.6;
+        }
+
+        .rank-progression-box {
+            background-color: #1f241d;
+            border: 1px solid #4a5444;
+            padding: 20px;
+            border-radius: 6px;
+            max-width: 450px;
+            margin: 0 auto 40px auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .rank-progression-title {
+            font-size: 13px;
+            color: #aaaaaa;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .rank-progression-points {
+            font-weight: bold;
+            color: #ffffff;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .rank-progression-points span {
+            color: #e06c75;
+        }
+
+        .rank-progression-note {
+            font-size: 12px;
+            color: #888888;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary-large {
+            background-color: #a33333;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary-large:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary-large {
+            background-color: #31382f;
+            color: white;
+            border: 1px solid #5a6353;
+            padding: 14px 28px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn-secondary-large:hover {
+            background-color: #4a5444;
+        }
+
+        /* ФУТЕР */
+        footer {
+            background-color: #1f241d;
+            border-top: 6px solid #1a1e18;
+            padding: 15px 20px;
+            margin-top: 40px;
+        }
+
+        .footer-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .social-icon-btn {
+            background-color: #31382f;
+            border: 1px solid #5a6353;
+            padding: 4px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .social-icon-btn img {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .social-icon-btn:hover {
+            background-color: #a33333;
+            border-color: #b53b3b;
+        }
+
+        .footer-contact-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .phone-link {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            background-color: #31382f;
+            border: 1px solid #5a6353;
+            padding: 5px 12px;
+            border-radius: 4px;
+        }
+
+        .messengers-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .messenger-icon {
+            background-color: #2b3028;
+            border: 1px solid #4a5444;
+            padding: 3px;
+            border-radius: 3px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            transition: border-color 0.2s;
+        }
+
+        .messenger-icon img {
+            width: 14px;
+            height: 14px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .messenger-icon:hover {
+            border-color: #a33333;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <div class="header-left">
+                <div class="war-day" id="war-day-counter">День війни: 0</div>
+                <div class="menu-wrapper">
+                    <button class="menu-btn" onclick="toggleMenuDropdown(event)">Меню</button>
+                    <div class="menu-dropdown" id="menuDropdown">
+                        <a href="index.html">Головна сторінка</a>
+                        <a href="shop.html">Каталог магазину</a>
+                        <a href="cart.html">Кошик</a>
+                        <a href="profile.html">Мій профіль</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-center">
+                <a href="index.html">
+                    <img src="logo.jpg" alt="Militaristica Logo">
+                    <div class="slogan">Дій впевнено і будь готовий</div>
+                </a>
+            </div>
+
+            <div class="actions-bar">
+                <input type="text" id="siteSearchInput" class="site-search-input" placeholder="🔍 Пошук по сайту..." onkeypress="handleSiteSearch(event)">
+                <a href="auth.html" class="btn">Вхід / Реєстрація</a>
+                <a href="donate.html" class="btn btn-donate">ДОНАТ</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="scroll-strip">
+        <div class="scroll-track">
+            <div class="scroll-logo-item"><img src="forses_logos/paratroop_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/sbs_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/suhoput_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/sso_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/morines_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/ppo_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/gur_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/ing_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/tank_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/mech_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/ng_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/arta_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/med_logo.jpg" alt=""></div>
+            
+            <div class="scroll-logo-item"><img src="forses_logos/paratroop_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/sbs_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/suhoput_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/sso_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/morines_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/ppo_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/gur_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/ing_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/tank_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/mech_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/ng_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/arta_logo.jpg" alt=""></div>
+            <div class="scroll-logo-item"><img src="forses_logos/med_logo.jpg" alt=""></div>
+        </div>
+    </div>
+
+    <hr class="thick-line">
+
+    <div class="shop-categories-container">
+        <div class="shop-categories-track">
+            <a href="mil_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/mil_goods.jpg" alt=""></div>
+                <span>Військова справа і екіпірування</span>
+            </a>
+            <a href="sport_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/sport_goods.jpg" alt=""></div>
+                <span>Спорт і здоров'я</span>
+            </a>
+            <a href="tour_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/tour_goods.jpg" alt=""></div>
+                <span>Туризм і походи</span>
+            </a>
+            <a href="work_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/work_goods.jpg" alt=""></div>
+                <span>Техніка та засоби</span>
+            </a>
+            <a href="trans_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/trans_goods.jpg" alt=""></div>
+                <span>Транспорт</span>
+            </a>
+            <a href="drone_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/drone_goods.jpg" alt=""></div>
+                <span>Дрони, запчастини</span>
+            </a>
+            <a href="com_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/com_goods.jpg" alt=""></div>
+                <span>Електроніка і зв'язок</span>
+            </a>
+            <a href="2hetd_goods.html" class="cat-card">
+                <div class="cat-img-box"><img src="goods_types/2hetd_goods.jpg" alt=""></div>
+                <span>Барахолка</span>
+            </a>
+        </div>
+    </div>
+
+    <main>
+        <div class="success-icon">🪖</div>
+        <h1 class="success-title">ЗАМОВЛЕННЯ УСПІШНО ПРИЙНЯТО!</h1>
+        
+        <p class="order-number">Номер вашого замовлення: <strong>#MLT-1488</strong></p>
+        
+        <p class="success-desc">
+            Дякуємо за довіру! Найближчим часом наш менеджер зв'яжеться з вами для підтвердження деталей відправки. Якщо ви обрали оплату за реквізитами, очікуйте повідомлення з рахунком IBAN у вказаний месенджер.
+        </p>
+
+        <div class="rank-progression-box">
+            <div class="rank-progression-title">Ваш прогрес покупця</div>
+            <div class="rank-progression-points">Отримано <span>+420</span> балів рейтингу!</div>
+            <div class="rank-progression-note">Продовжуйте діяти, щоб підвищити своє військове звання у системі Militaristica та отримувати більші знижки.</div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="shop.html" class="btn-primary-large">ПОВЕРНУТИСЯ В КАТАЛОГ</a>
+            <a href="profile.html" class="btn-secondary-large">МІЙ ПРОФІЛЬ</a> 
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <a href="auth.html" class="btn" style="font-size: 13px; padding: 7px 14px;">Реєстрація / Вхід</a>
+            <a href="shop.html" class="btn" style="background-color: #31382f; font-size: 13px; padding: 7px 16px; border-color: #5a6353;">МАГАЗИН</a>
+
+            <div class="footer-socials">
+                <a href="#" class="social-icon-btn"><img src="sn_logos/youtube_logo.jpg" alt="Ютуб"></a>
+                <a href="#" class="social-icon-btn"><img src="sn_logos/facebook_logo.jpg" alt="Фейсбук"></a>
+                <a href="#" class="social-icon-btn"><img src="sn_logos/insta_logo.jpg" alt="Інстаграм"></a>
+                <a href="#" class="social-icon-btn"><img src="sn_logos/tik_tok_logo.jpg" alt="Тік-Ток"></a>
+                <a href="#" class="social-icon-btn"><img src="sn_logos/linkedin_logo.jpg" alt="ЛінкедІн"></a>
+            </div>
+
+            <div class="footer-contact-block">
+                <a href="tel:+380000000000" class="phone-link">+38 (000) 000-00-00</a>
+                <div class="messengers-row">
+                    <a href="#" class="messenger-icon"><img src="sn_logos/viber_logo.jpg" alt="Вайбер"></a>
+                    <a href="#" class="messenger-icon"><img src="sn_logos/watsapp_logo.jpg" alt="Ватсапп"></a>
+                    <a href="#" class="messenger-icon"><img src="sn_logos/Telegram_logo.jpg" alt="Телеграм"></a>
+                    <a href="#" class="messenger-icon"><img src="sn_logos/Signal_logo.jpg" alt="Сигнал"></a>
+                    <a href="#" class="messenger-icon"><img src="sn_logos/fbmess_logo.jpg" alt="ФБ"></a>
+                </div>
+            </div>
+
+            <a href="donate.html" class="btn btn-donate" style="font-size: 13px; padding: 7px 18px;">ДОНАТ</a>
+        </div>
+    </footer>
+
+    <script>
+        function updateWarDay() {
+            const startDate = new Date('2022-02-24');
+            const today = new Date();
+            const diffTime = today - startDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            document.getElementById('war-day-counter').innerText = `День війни: ${diffDays}`;
+        }
+        updateWarDay();
+
+        function toggleMenuDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('menuDropdown');
+            if (dropdown.style.display === 'block') {
+                dropdown.style.display = 'none';
+            } else {
+                dropdown.style.display = 'block';
+            }
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.menu-btn')) {
+                const dropdown = document.getElementById('menuDropdown');
+                if (dropdown && dropdown.style.display === 'block') {
+                    dropdown.style.display = 'none';
+                }
+            }
+        }
+
+        function handleSiteSearch(event) {
+            if (event.key === 'Enter') {
+                let query = document.getElementById('siteSearchInput').value.trim();
+                if (query) {
+                    window.location.href = `shop.html?search=${encodeURIComponent(query)}`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

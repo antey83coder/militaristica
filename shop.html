@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог — Militaristica</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: #e0e0e0; margin: 0; padding: 0; }
+        
+        /* Шапка */
+        header { background-color: #1e1e1e; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; }
+        header img { height: 40px; }
+        .nav-buttons { display: flex; gap: 15px; align-items: center; }
+        .btn { padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; text-decoration: none; border: 1px solid #444; color: white; background: #282c34; }
+        .btn:hover { background: #3e4451; }
+        .btn-red { background-color: #e06c75; border-color: #e06c75; }
+        .btn-red:hover { background-color: #c9515b; }
+
+        /* Панель категорій */
+        .categories-panel { background: #1a1a1a; padding: 20px 0; display: flex; justify-content: center; gap: 15px; border-bottom: 1px solid #333; flex-wrap: wrap; }
+        .cat-box { background: #282c34; width: 110px; padding: 15px 5px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid #333; transition: 0.2s; }
+        .cat-box:hover, .cat-box.active { border-color: #e06c75; background: #1e1e1e; }
+        .cat-box img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 10px; }
+        .cat-box span { display: block; font-size: 11px; color: #aaa; font-weight: bold; }
+
+        /* Основний контент */
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+        .catalog-header { margin-bottom: 30px; }
+        .catalog-header h1 { margin: 0; font-size: 28px; text-transform: uppercase; }
+        .catalog-header p { color: #888; margin: 5px 0 20px 0; }
+        
+        .search-bar { display: flex; gap: 10px; }
+        .search-bar input { flex: 1; padding: 12px; background: #1e1e1e; border: 1px solid #333; color: white; border-radius: 4px; }
+        
+        /* Сітка товарів */
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
+        .product-card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; transition: 0.3s; }
+        .product-card:hover { border-color: #e06c75; transform: translateY(-5px); }
+        .product-img { width: 100%; height: 200px; object-fit: cover; background: #282c34; }
+        .product-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+        .sku { color: #e06c75; font-size: 12px; font-weight: bold; margin-bottom: 5px; }
+        .title { margin: 0 0 10px 0; font-size: 16px; color: #fff; flex-grow: 1; }
+        .price { color: #98c379; font-size: 20px; font-weight: bold; margin: 0 0 15px 0; }
+        .btn-buy { background: transparent; color: #98c379; border: 1px solid #98c379; width: 100%; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-buy:hover { background: #98c379; color: #121212; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html"><img src="logo.jpg" alt="Militaristica Logo"></a>
+        <div class="nav-buttons">
+            <a href="index.html" class="btn">Головна</a>
+            <a href="cart.html" class="btn btn-red">🛒 КОШИК</a>
+            <a href="auth.html" class="btn">Вхід / Реєстрація</a>
+        </div>
+    </header>
+
+    <div class="categories-panel">
+        <div class="cat-box" onclick="filterCategory('mil_goods')"><span>Військова справа</span></div>
+        <div class="cat-box" onclick="filterCategory('sport_goods')"><span>Спорт і здоров'я</span></div>
+        <div class="cat-box" onclick="filterCategory('tour_goods')"><span>Туризм і походи</span></div>
+        <div class="cat-box" onclick="filterCategory('work_goods')"><span>Інструменти</span></div>
+        <div class="cat-box" onclick="filterCategory('trans_goods')"><span>Транспорт</span></div>
+        <div class="cat-box" onclick="filterCategory('drone_goods')"><span>Дрони</span></div>
+        <div class="cat-box" onclick="filterCategory('com_goods')"><span>Електроніка</span></div>
+        <div class="cat-box" onclick="filterCategory('2hetd_goods')"><span>Барахолка</span></div>
+    </div>
+
+    <div class="container">
+        <div class="catalog-header">
+            <h1>КАТАЛОГ СПОРЯДЖЕННЯ</h1>
+            <p id="productsCount">Знайдено товарів: 0</p>
+            
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Пошук за назвою або артикулом...">
+                <button class="btn" onclick="executeSearch()">Шукати</button>
+                <button class="btn" onclick="loadAllProducts()">Показати всі</button>
+            </div>
+        </div>
+
+        <div class="products-grid" id="productsGrid">
+            <!-- Товари з БД будуть з'являтися тут -->
+        </div>
+    </div>
+
+    <!-- ================= ЛАЙТБОКС (Збільшення фото) ================= -->
+    <div id="imageLightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; flex-direction:column; cursor:zoom-out; backdrop-filter: blur(5px);" onclick="closeLightbox()">
+        <span style="position:absolute; top:20px; right:40px; color:#fff; font-size:40px; font-weight:bold; cursor:pointer; text-shadow: 0 0 10px rgba(0,0,0,0.5);">&times;</span>
+        <img id="lightboxImg" style="max-width:90%; max-height:90%; border-radius:8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); object-fit: contain;">
+    </div>
+
+    <script>
+        function openLightbox(imgSrc) {
+            document.getElementById('lightboxImg').src = imgSrc;
+            document.getElementById('imageLightbox').style.display = 'flex';
+        }
+        function closeLightbox() {
+            document.getElementById('imageLightbox').style.display = 'none';
+        }
+    </script>
+    <!-- ============================================================== -->
+
+    <script>
+        let allProductsData = [];
+
+        // 1. ЗАВАНТАЖЕННЯ З БАЗИ ДАНИХ
+        async function fetchProducts() {
+            try {
+                let res = await fetch('/api/products');
+                allProductsData = await res.json();
+                renderGrid(allProductsData);
+            } catch(e) { 
+                console.error("Помилка зв'язку з сервером", e); 
+            }
+        }
+
+        // 2. ВІДМАЛЬОВКА ТОВАРІВ НА ЕКРАНІ
+        function renderGrid(products) {
+            let grid = document.getElementById('productsGrid');
+            document.getElementById('productsCount').innerText = `Знайдено товарів: ${products.length}`;
+            grid.innerHTML = '';
+
+            if (products.length === 0) {
+                grid.innerHTML = '<p style="color:#aaa;">На жаль, товарів за вашим запитом не знайдено.</p>';
+                return;
+            }
+
+            products.forEach(p => {
+                let imgUrl = (p.image_urls && p.image_urls.length > 0) ? p.image_urls.split(',')[0] : 'logo.jpg';
+                
+                let card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <a href="product.html?id=${p.id}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; flex-grow: 1;">
+                        <img src="${imgUrl}" class="product-img" onclick="event.preventDefault(); event.stopPropagation(); openLightbox(this.src)" style="cursor: zoom-in;" alt="${p.title}">
+                        <div class="product-info">
+                            <div class="sku">${p.sku}</div>
+                            <h3 class="title">${p.title}</h3>
+                            <div class="price">${p.price} ₴</div>
+                        </div>
+                    </a>
+                    <div style="padding: 0 15px 15px 15px;">
+                        <button class="btn-buy" onclick="addToCart(${p.id})">ДО КОШИКА</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 3. ФІЛЬТРАЦІЯ ТА ПОШУК
+        function filterCategory(catCode) {
+            let filtered = allProductsData.filter(p => p.categories.includes(catCode));
+            renderGrid(filtered);
+        }
+
+        function executeSearch() {
+            let query = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!query) return;
+
+            let filtered = allProductsData.filter(p => 
+                p.title.toLowerCase().includes(query) || 
+                p.sku.toLowerCase().includes(query) || 
+                (p.keywords && p.keywords.toLowerCase().includes(query))
+            );
+            renderGrid(filtered);
+        }
+
+        function loadAllProducts() {
+            document.getElementById('searchInput').value = '';
+            renderGrid(allProductsData);
+        }
+
+        // 4. ДОДАВАННЯ ДО КОШИКА (Локально для браузера)
+        function addToCart(productId) {
+            let cart = JSON.parse(localStorage.getItem('militaristica_cart')) || [];
+            
+            // Шукаємо сам товар у завантаженому списку
+            let product = allProductsData.find(p => p.id === productId);
+            if(!product) return;
+
+            // Перевіряємо, чи є він уже в кошику
+            let existingItem = cart.find(item => item.id === productId);
+            
+            if(existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: product.id,
+                    sku: product.sku,
+                    title: product.title,
+                    price: product.price,
+                    image: (product.image_urls && product.image_urls.length > 0) ? product.image_urls.split(',')[0] : 'logo.jpg',
+                    quantity: 1
+                });
+            }
+            
+            localStorage.setItem('militaristica_cart', JSON.stringify(cart));
+            alert("Товар додано до кошика!");
+        }
+
+        // Запуск при відкритті сторінки
+        document.addEventListener("DOMContentLoaded", fetchProducts);
+    </script>
+</body>
+</html>

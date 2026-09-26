@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <title>Militaristica — Кошик</title>
+    
+    <!-- ================= ПОЧАТОК CSS ================= -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+        
+        body { background-color: #1a1e18; color: #ffffff; font-family: 'Roboto', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        /* ШАПКА САЙТУ */
+        .header { background-color: #1f241d; border-bottom: 2px solid #a33333; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .nav-btn { color: #ffffff; text-decoration: none; font-size: 14px; font-weight: bold; padding: 10px 15px; background-color: #2b3028; border: 1px solid #4a5444; border-radius: 5px; transition: 0.2s; }
+        
+        .main-container { max-width: 1000px; margin: 20px auto; padding: 0 15px; flex-grow: 1; width: 100%; box-sizing: border-box; }
+        .section-title { font-size: 24px; font-weight: 900; text-transform: uppercase; margin-bottom: 20px; border-left: 4px solid #a33333; padding-left: 10px; }
+
+        /* СПИСОК ТОВАРІВ У КОШИКУ */
+        .cart-items-list { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; }
+        .cart-item { background-color: #242922; border: 1px solid #3b4238; border-radius: 8px; padding: 15px; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .cart-item-img { width: 80px; height: 80px; object-fit: contain; border-radius: 4px; border: 1px solid #4a5444; flex-shrink: 0; }
+        .cart-item-info { flex-grow: 1; min-width: 200px; }
+        .cart-item-title { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+        .cart-item-sku { font-family: monospace; font-size: 12px; color: #e06c75; }
+        
+        /* Блок управління кількістю (плюс/мінус) */
+        .qty-controls { display: flex; align-items: center; gap: 10px; background-color: #1f241d; border: 1px solid #4a5444; border-radius: 4px; padding: 5px; }
+        .qty-btn { background: transparent; border: none; color: #fff; font-size: 18px; font-weight: bold; cursor: pointer; padding: 0 10px; }
+        .qty-btn:hover { color: #a33333; }
+        .item-price { font-size: 18px; font-weight: 900; color: #98c379; min-width: 100px; text-align: right; }
+        .btn-remove { background-color: transparent; border: 1px solid #e06c75; color: #e06c75; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-remove:hover { background-color: #e06c75; color: white; }
+
+        /* БЛОК ОФОРМЛЕННЯ ЗАМОВЛЕННЯ */
+        .checkout-box { background-color: #1f241d; border: 1px solid #4a5444; border-radius: 8px; padding: 25px; margin-top: 20px; }
+        .total-price-row { display: flex; justify-content: space-between; align-items: center; font-size: 22px; font-weight: bold; margin-bottom: 20px; border-bottom: 1px solid #3b4238; padding-bottom: 15px; }
+        .total-sum { color: #a33333; font-size: 28px; font-weight: 900; }
+        
+        /* Форма з даними покупця */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 14px; margin-bottom: 5px; color: #aaaaaa; }
+        .form-input { width: 100%; box-sizing: border-box; background-color: #2b3028; border: 1px solid #4a5444; color: #ffffff; padding: 12px; border-radius: 4px; font-size: 15px; outline: none; }
+        .form-input:focus { border-color: #a33333; }
+        
+        .btn-submit { background-color: #a33333; color: white; border: none; width: 100%; padding: 15px; border-radius: 6px; font-size: 16px; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.2s; margin-top: 10px; }
+        .btn-submit:hover { background-color: #bd3a3a; }
+        .btn-submit:disabled { background-color: #555; cursor: not-allowed; }
+
+        /* Мобільна адаптація */
+        @media(max-width: 600px) {
+            .cart-item { flex-direction: column; align-items: stretch; text-align: center; }
+            .cart-item-img { align-self: center; }
+            .item-price { text-align: center; margin-top: 10px; }
+            .qty-controls { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <a href="index.html"><img src="logo.jpg" alt="Militaristica" style="max-height: 40px;"></a>
+        <a href="shop.html" class="nav-btn">Продовжити покупки</a>
+    </header>
+
+    <main class="main-container">
+        <h1 class="section-title">Оформлення замовлення</h1>
+        
+        <!-- Сюди скрипт вставить товари, які людина додала в кошик -->
+        <div class="cart-items-list" id="cartContainer">
+            <div style="text-align: center; color: #888; padding: 40px;">Кошик порожній</div>
+        </div>
+
+        <!-- Форма, куди людина вписує своє ім'я та куди відправити посилку -->
+        <div class="checkout-box" id="checkoutBox" style="display: none;">
+            <div class="total-price-row">
+                <span>Всього до сплати:</span>
+                <span class="total-sum" id="totalPrice">0 ₴</span>
+            </div>
+            
+            <form onsubmit="submitOrder(event)">
+                <div class="form-group">
+                    <label>ПІБ отримувача *</label>
+                    <input type="text" id="orderName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>Телефон *</label>
+                    <input type="text" id="orderPhone" class="form-input" required placeholder="+380...">
+                </div>
+                <div class="form-group">
+                    <label>Місто та номер відділення НП (або адреса) *</label>
+                    <input type="text" id="orderAddress" class="form-input" required>
+                </div>
+                <button type="submit" id="submitOrderBtn" class="btn-submit">Підтвердити замовлення</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- ================= JAVASCRIPT (ЛОГІКА) ================= -->
+    <script>
+        // Дістаємо кошик із пам'яті браузера. Якщо там пусто, створюємо порожній список [].
+        let cart = JSON.parse(localStorage.getItem('militaristica_cart')) || [];
+
+        // ФУНКЦІЯ МАЛЮВАННЯ КОШИКА
+        function renderCart() {
+            let container = document.getElementById('cartContainer');
+            let checkoutBox = document.getElementById('checkoutBox');
+            let totalEl = document.getElementById('totalPrice');
+            
+            // Якщо кошик порожній — ховаємо форму замовлення і пишемо текст
+            if (cart.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #888; padding: 40px; font-size: 18px;">🛒 Ваш кошик порожній. Час <a href="shop.html" style="color:#a33333;">зазирнути в магазин</a>!</div>';
+                checkoutBox.style.display = 'none';
+                return;
+            }
+
+            container.innerHTML = '';
+            let total = 0; // Змінна для підрахунку загальної суми
+
+            // Проходимось по кожному товару в кошику (map створює HTML-картку для кожного)
+            cart.forEach((item, index) => {
+                // Рахуємо ціну цього товару (ціна * кількість)
+                let itemSum = item.price * item.quantity;
+                total += itemSum; // Додаємо до загальної суми
+                
+                // Вставляємо шматок HTML. Зверни увагу на кнопки "+" і "-". Вони викликають функцію changeQty і передають туди номер товару (index)
+                container.innerHTML += `
+                    <div class="cart-item">
+                        <img src="${item.image}" class="cart-item-img">
+                        <div class="cart-item-info">
+                            <div class="cart-item-title">${item.title}</div>
+                            <div class="cart-item-sku">Арт: ${item.sku}</div>
+                        </div>
+                        <div class="qty-controls">
+                            <button type="button" class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
+                            <span style="font-weight:bold; min-width:20px; text-align:center;">${item.quantity}</span>
+                            <button type="button" class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                        </div>
+                        <div class="item-price">${itemSum} ₴</div>
+                        <button type="button" class="btn-remove" onclick="removeItem(${index})">X</button>
+                    </div>
+                `;
+            });
+
+            // Показуємо загальну суму і відкриваємо форму замовлення
+            totalEl.innerText = total + ' ₴';
+            checkoutBox.style.display = 'block';
+            
+            // Якщо людина вже увійшла на сайт раніше — підставляємо її ім'я в поле "ПІБ"
+            let user = JSON.parse(localStorage.getItem('militaristica_user'));
+            if(user && !document.getElementById('orderName').value) {
+                document.getElementById('orderName').value = user.name;
+            }
+        }
+
+        // ЗМІНА КІЛЬКОСТІ (+ або -)
+        function changeQty(index, delta) {
+            let item = cart[index];
+            let newQty = item.quantity + delta;
+            
+            // Якщо кількість падає до 0 або нижче — нічого не робимо (для видалення є хрестик)
+            if (newQty < 1) return;
+            // Якщо кількість перевищує те, що є на складі — сваримося
+            if (newQty > item.max_stock) {
+                alert(`Вибачте, на складі залишилось лише ${item.max_stock} шт.`);
+                return;
+            }
+            
+            item.quantity = newQty; // Оновлюємо кількість
+            localStorage.setItem('militaristica_cart', JSON.stringify(cart)); // Зберігаємо в пам'ять
+            renderCart(); // Перемальовуємо кошик
+        }
+
+        // ВИДАЛЕННЯ ТОВАРУ
+        function removeItem(index) {
+            cart.splice(index, 1); // Видаляємо 1 елемент зі списку за його номером
+            localStorage.setItem('militaristica_cart', JSON.stringify(cart));
+            renderCart();
+        }
+
+        // ВІДПРАВКА ЗАМОВЛЕННЯ НА СЕРВЕР (РЕАЛЬНА)
+        async function submitOrder(event) {
+            event.preventDefault(); 
+            
+            // 1. Збираємо дані покупця з форми
+            let name = document.getElementById('orderName').value.trim();
+            let phone = document.getElementById('orderPhone').value.trim();
+            let address = document.getElementById('orderAddress').value.trim();
+
+            // --- ЖОРСТКА ПЕРЕВІРКА ДАНИХ (ВАЛІДАЦІЯ) ---
+            let digitsOnly = phone.replace(/\D/g, ''); // Залишаємо тільки цифри
+            if (digitsOnly.length < 10) {
+                alert("Будь ласка, введіть повний номер телефону (мінімум 10 цифр).");
+                return; // Блокуємо відправку
+            }
+            if (address.length < 5) {
+                alert("Будь ласка, введіть точну адресу або номер відділення (мінімум 5 символів).");
+                return; // Блокуємо відправку
+            }
+
+            // Блокуємо кнопку від подвійного натискання
+            let submitBtn = document.getElementById('submitOrderBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "⏳ Обробка замовлення...";
+
+            // 2. Рахуємо загальну суму
+            let total = 0;
+            cart.forEach(item => { total += item.price * item.quantity; });
+
+            // 3. Дістаємо ID покупця (якщо він залогінений)
+            let user = JSON.parse(localStorage.getItem('militaristica_user'));
+            let userId = user ? user.id : 0;
+
+            // 4. Пакуємо дані для відправки
+            let formData = new FormData();
+            formData.append("customer_name", name);
+            formData.append("phone", phone);
+            formData.append("delivery_info", address);
+            formData.append("items_json", JSON.stringify(cart));
+            formData.append("total_price", total);
+            formData.append("user_id", userId);
+
+            try {
+                // 5. Відправляємо запит
+                let res = await fetch('/api/orders/add', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (res.ok) {
+                    alert('Дякуємо! Ваше замовлення успішно оформлено і надіслано продавцю.');
+                    localStorage.removeItem('militaristica_cart');
+                    window.location.href = 'shop.html';
+                } else {
+                    let err = await res.json();
+                    alert('Помилка сервера: ' + (err.detail || 'Не вдалося оформити замовлення.'));
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Підтвердити замовлення";
+                }
+            } catch (err) {
+                console.error("Помилка:", err);
+                alert("Немає зв'язку з сервером.");
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Підтвердити замовлення";
+            }
+        }
+
+        // При відкритті сторінки одразу малюємо кошик
+        document.addEventListener("DOMContentLoaded", renderCart);
+    </script>
+</body>
+</html>

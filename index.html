@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <title>Militaristica — Дій впевнено і будь готовий</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+        
+        body { 
+            background-color: #1a1e18; 
+            background-image: linear-gradient(rgba(26, 30, 24, 0.88), rgba(26, 30, 24, 0.88)), url('Sotecam.jpg');
+            background-repeat: repeat;
+            background-size: 350px;
+            color: #ffffff; 
+            font-family: 'Roboto', sans-serif; 
+            margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; 
+        }
+        
+        /* ШАПКА САЙТУ */
+        .header { background-color: #1f241d; border-bottom: 2px solid #a33333; padding: 15px 2%; display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box; flex-wrap: wrap; gap: 15px; }
+        .header-left { display: flex; gap: 10px; align-items: center; } 
+        .header-center { flex-grow: 1; display: flex; justify-content: center; min-width: 150px; } 
+        .header-center img { max-height: 45px; } 
+        .header-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; } 
+
+        /* КНОПКИ ТА НАВІГАЦІЯ */
+        .btn-red { background-color: #a33333; color: white; border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 14px; transition: 0.2s; }
+        .btn-red:hover { background-color: #bd3a3a; } 
+        
+        .btn-dark { background-color: #2b3028; color: white; border: 1px solid #4a5444; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 14px; transition: 0.2s; }
+        .btn-dark:hover { background-color: #3b4238; border-color: #a33333; } 
+
+        .nav-btn { background-color: #2b3028; color: white; border: 1px solid #4a5444; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 14px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
+        .nav-btn:hover { background-color: #3b4238; border-color: #a33333; }
+
+        .donate-btn { background-color: #2e8b57; color: white; border-color: #2e8b57; text-transform: uppercase; font-weight: 900; }
+        .donate-btn:hover { background-color: #246b43; border-color: #246b43; }
+        
+        .search-input { background: #141712; border: 1px solid #4a5444; color: white; padding: 10px 15px; border-radius: 4px; outline: none; font-size: 14px; min-width: 200px; }
+        .search-input:focus { border-color: #a33333; } 
+        
+        .user-pill { display: flex; align-items: center; gap: 8px; background: #2b3028; border: 1px solid #4a5444; padding: 5px 15px 5px 5px; border-radius: 25px; text-decoration: none; color: white; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        .user-pill:hover { border-color: #a33333; }
+        .user-avatar { width: 30px; height: 30px; border-radius: 50%; background: #a33333; display: flex; justify-content: center; align-items: center; object-fit: cover; }
+
+        /* ВИЇЗНЕ МЕНЮ */
+        .side-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background-color: #1f241d; border-right: 2px solid #a33333; z-index: 1000; transition: 0.3s ease; display: flex; flex-direction: column; box-shadow: 2px 0 15px rgba(0,0,0,0.7); }
+        .side-menu.open { left: 0; }
+        .close-btn { background: #141712; color: #e06c75; border: none; padding: 20px; text-align: right; font-size: 16px; cursor: pointer; font-weight: bold; border-bottom: 2px solid #a33333; }
+        .side-menu-links { display: flex; flex-direction: column; overflow-y: auto; }
+        .side-menu-links a { padding: 18px 25px; color: #fff; text-decoration: none; font-size: 16px; font-weight: bold; border-bottom: 1px solid #3b4238; transition: 0.2s; }
+        .side-menu-links a:hover { background-color: #2b3028; color: #a33333; padding-left: 30px; }
+        .menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 999; display: none; }
+        .menu-overlay.open { display: block; }
+
+        /* ОСНОВНА ЧАСТИНА */
+        .main-container { width: 100%; padding: 25px 2%; box-sizing: border-box; display: flex; flex-direction: column; gap: 25px; flex-grow: 1; }
+        .banner-text { background-color: #242922; border-left: 4px solid #a33333; padding: 20px 25px; font-size: 16px; line-height: 1.6; border-radius: 0 8px 8px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+
+        /* КАТЕГОРІЇ */
+        .categories-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; width: 100%; } 
+        .category-card { background-color: #1f241d; border: 1px solid #4a5444; border-radius: 8px; padding: 20px 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-decoration: none; color: #ffffff; transition: 0.2s; aspect-ratio: 1 / 1.1; box-sizing: border-box; }
+        .category-card:hover { border-color: #a33333; transform: translateY(-5px); background-color: #2b3028; box-shadow: 0 10px 15px rgba(0,0,0,0.4); } 
+        .category-img { height: 60%; width: 100%; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
+        .category-img img { max-height: 100%; max-width: 100%; object-fit: contain; } 
+        .category-card span { font-size: 14px; font-weight: bold; text-align: center; line-height: 1.3; }
+
+        .btn-large-link { display: block; width: 100%; background: #1f241d; border: 1px solid #4a5444; color: white; text-align: center; padding: 20px; font-size: 20px; font-weight: 900; text-decoration: none; border-radius: 8px; transition: 0.2s; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .btn-large-link:hover { background: #2b3028; border-color: #a33333; }
+
+        .info-block { display: flex; justify-content: space-between; align-items: center; background: #1f241d; padding: 20px; border-radius: 8px; border: 1px solid #4a5444; width: 100%; box-sizing: border-box; flex-wrap: wrap; gap: 15px; }
+        .support-text { background: #1f241d; padding: 25px; border-radius: 8px; border: 1px solid #4a5444; width: 100%; box-sizing: border-box; line-height: 1.6; color: #cccccc; font-size: 15px; }
+        .support-text a { color: #e06c75; font-weight: bold; text-decoration: none; }
+
+        /* СТАТИСТИКА ТА КНОПКИ */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; width: 100%; }
+        .stat-box { background-color: #1f241d; border: 1px solid #4a5444; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .stat-title { font-size: 18px; font-weight: bold; color: #ffffff; }
+        .stat-row { display: flex; gap: 10px; align-items: center; }
+        
+        .stat-btn { flex-grow: 1; padding: 12px; text-align: center; border-radius: 4px; font-weight: bold; font-size: 14px; text-transform: uppercase; background-color: #a33333; color: white; border: none; cursor: pointer; transition: 0.2s; }
+        .stat-btn:hover { background-color: #bd3a3a; transform: scale(1.03); }
+        .stat-btn:active { transform: scale(0.95); }
+        
+        .stat-count { background-color: #2b3028; border: 1px solid #4a5444; padding: 12px 20px; border-radius: 4px; font-weight: bold; color: white; min-width: 60px; text-align: center; }
+        .stat-comments { display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap; }
+        .stat-comments input { flex-grow: 1; background: #141712; border: 1px solid #4a5444; color: white; padding: 10px; border-radius: 4px; min-width: 150px; outline: none; }
+        .stat-comments button { background: #2b3028; color: white; border: 1px solid #4a5444; padding: 10px 15px; border-radius: 4px; cursor: pointer; white-space: nowrap; font-weight: bold; }
+
+        /* МОДАЛЬНЕ ВІКНО КОМЕНТАРІВ */
+        .comments-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1f241d; border: 2px solid #a33333; border-radius: 8px; width: 90%; max-width: 400px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.9); z-index: 1001; display: none; flex-direction: column; }
+        .comments-popup.open { display: flex; }
+        .comments-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3b4238; padding-bottom: 10px; margin-bottom: 15px; }
+        .comments-header h3 { margin: 0; color: #fff; }
+        .comments-list { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
+        .comment-item { background: #2b3028; padding: 10px; border-radius: 6px; border: 1px solid #4a5444; font-size: 14px; color: #ddd; line-height: 1.4; }
+        .comment-author { font-weight: bold; color: #98c379; margin-bottom: 5px; font-size: 12px; }
+
+        /* ФУТЕР */
+        .footer-full { background: #141712; border-top: 2px solid #a33333; padding: 25px 2%; width: 100%; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+        .footer-row { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .social-btn { width: 40px; height: 40px; background-color: #2b3028; border: 1px solid #4a5444; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: 0.2s; padding: 6px; box-sizing: border-box; text-decoration: none; }
+        .social-btn img { width: 100%; height: 100%; object-fit: contain; } 
+        .social-btn:hover { background-color: #3b4238; border-color: #a33333; transform: translateY(-3px); }
+        .contact-pill { display: flex; align-items: center; gap: 12px; background-color: #2b3028; border: 1px solid #4a5444; padding: 8px 15px; border-radius: 6px; font-weight: bold; font-size: 15px; color: white; }
+        .messenger-icons { display: flex; gap: 8px; align-items: center; }
+        .messenger-icons img { width: 22px; height: 22px; object-fit: contain; }
+
+        /* ФОТОСТРІЧКА */
+        .photostrip-wrapper {
+            overflow: hidden;
+            white-space: nowrap;
+            background-color: #141712;
+            padding: 12px 0;
+            border-top: 2px solid #3b4238;
+            border-bottom: 2px solid #3b4238;
+            width: 100%;
+        }
+        .photostrip-track {
+            display: inline-flex;
+            gap: 15px;
+            animation: scrollPhotostrip 25s linear infinite;
+        }
+        .photostrip-track:hover {
+            animation-play-state: paused;
+        }
+        .photostrip-track img {
+            height: 100px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid #3b4238;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .photostrip-track img:hover {
+            border-color: #a33333;
+        }
+        @keyframes scrollPhotostrip {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        @media(max-width: 900px) {
+            .header { flex-direction: column; text-align: center; padding: 15px; } 
+            .header-left, .header-center, .header-right { width: 100%; justify-content: center; }
+            .search-input { width: 100%; } 
+            .categories-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); } 
+            .category-card { padding: 15px 5px; }
+            .info-block { flex-direction: column; text-align: center; align-items: stretch; }
+            .stat-comments { flex-direction: column; }
+            .stat-comments button { width: 100%; }
+            .footer-full { flex-direction: column; justify-content: center; } 
+            .footer-row { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ВИЇЗНЕ МЕНЮ -->
+    <div id="sideMenu" class="side-menu">
+        <button class="close-btn" onclick="toggleMenu()">✖ ЗАКРИТИ МЕНЮ</button>
+        <div class="side-menu-links">
+            <a href="index.html">🏠 Головна сторінка</a>
+            <a href="shop.html">🛍️ Каталог товарів</a>
+            <a href="cart.html">🛒 Мій кошик</a>
+            <a href="auth.html">👤 Вхід / Реєстрація</a>
+            <a href="profile.html">⚙️ Особистий кабінет</a>
+            <a href="donate.html" style="color: #98c379; margin-top: 15px; border-top: 1px solid #3b4238; padding-top: 25px;">🇺🇦 Підтримати ЗСУ (Донат)</a>
+        </div>
+    </div>
+    <div id="menuOverlay" class="menu-overlay" onclick="toggleMenu()"></div>
+
+    <!-- ШАПКА -->
+    <header class="header">
+        <div class="header-left">
+            <div class="btn-red">День війни: <span id="warDays"></span></div>
+            <button class="nav-btn" onclick="toggleMenu()">☰ МЕНЮ</button>
+        </div>
+        <div class="header-center">
+            <a href="index.html"><img src="logo.jpg" alt="Militaristica"></a>
+        </div>
+        <div class="header-right">
+            <input type="text" class="search-input" placeholder="🔍 Пошук по сайту..." onkeyup="if(event.key === 'Enter') window.location.href='shop.html?search='+this.value">
+            <div id="headerUserZone">
+                <a href="auth.html" class="btn-dark">Вхід / Реєстрація</a>
+            </div>
+            <a href="cart.html" class="btn-dark" style="border-color: #a33333;">🛒 КОШИК</a>
+            <a href="donate.html" class="nav-btn donate-btn">ДОНАТ</a>
+        </div>
+    </header>
+
+    <!-- РУХОМА ФОТОСТРІЧКА -->
+    <div class="photostrip-wrapper">
+        <div class="photostrip-track" id="photoStripTrack">
+            <!-- Фото з бази даних будуть додані сюди автоматично -->
+        </div>
+    </div>
+
+    <!-- ГОЛОВНА СТОРІНКА -->
+    <main class="main-container">
+        <div class="banner-text">
+            <b>Militaristica</b> — це площадка для сильних і впевнених людей! У нас ви знайдете товари для мілітарної справи, спорту, туризму, активного відпочинку, роботи тощо.
+        </div>
+
+        <div class="categories-grid" id="mainCategories"></div>
+
+        <div class="banner-text">
+            Ми прагнемо створити місце, де воїни і звичайні люди можуть впевнено придбати усе необхідне для своїх задач.
+        </div>
+
+        <a href="shop.html" class="btn-large-link">🛒 ПЕРЕЙТИ ДО МАГАЗИНУ</a>
+
+        <div class="info-block">
+            <span style="font-size: 16px; font-weight: bold;">Умови доставки, оплати та повернення</span>
+            <button class="btn-dark">📖 Приховати / Показати</button>
+        </div>
+
+        <div class="support-text">
+            Сайт підтримує Україну, <b>«Вірю в ЗСУ і Перемогу!»</b> Команда сайту впевнена, що народ, який власною кров'ю підтримує свою армію, приречений на те, щоб отримати перемогу! Частина з <a href="donate.html">«Донатів»</a> натомість йде на підтримку Сил оборони України. Також, можете просто <a href="donate.html">задонатити</a> для підтримки наших захисників, задля наближення нашої перемоги.
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-title">Слава Україні!</div>
+                <div class="stat-row">
+                    <button class="stat-btn" onclick="addLike('count1')">Героям слава!</button>
+                    <div class="stat-count" id="count1">1482</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-title">Слава Нації!</div>
+                <div class="stat-row">
+                    <button class="stat-btn" onclick="addLike('count2')">Смерть ворогам!</button>
+                    <div class="stat-count" id="count2">953</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-title">Україна!</div>
+                <div class="stat-row">
+                    <button class="stat-btn" onclick="addLike('count3')">Понад усе!</button>
+                    <div class="stat-count" id="count3">2104</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-title">пУТІН!</div>
+                <div class="stat-row">
+                    <button class="stat-btn" style="background-color: #e06c75;" onclick="addLike('count4')">Х.УЙЛО!</button>
+                    <div class="stat-count" id="count4">5320</div>
+                </div>
+                <!-- ОНОВЛЕНИЙ БЛОК ВВОДУ КОМЕНТАРІВ -->
+                <div class="stat-comments">
+                    <input type="text" id="putinInput" placeholder="Додай від себе..." onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendComment(); }">
+                    <button onclick="sendComment()" style="background-color: #a33333; border-color: #a33333; padding: 10px;" title="Надіслати">➕</button>
+                    <button id="commentBtn" onclick="toggleComments()">💬 Коментарі (3)</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ВІКНО З КОМЕНТАРЯМИ -->
+    <div id="commentsOverlay" class="menu-overlay" onclick="toggleComments()"></div>
+    <div id="commentsPopup" class="comments-popup">
+        <div class="comments-header">
+            <h3>Коментарі</h3>
+            <button onclick="toggleComments()" style="background:transparent; color:#e06c75; border:none; font-size:20px; cursor:pointer;">✖</button>
+        </div>
+        <div id="commentsList" class="comments-list"></div>
+    </div>
+
+    <!-- ПІДВАЛ -->
+    <footer class="footer-full">
+        <div class="footer-row">
+            <a href="auth.html" class="btn-dark">Реєстрація / Вхід</a>
+            <a href="shop.html" class="btn-dark">МАГАЗИН</a>
+            <a href="cart.html" class="btn-dark" style="border-color: #a33333;">🛒 КОШИК</a>
+        </div>
+        <div class="footer-row">
+            <a href="#" class="social-btn"><img src="sn_logos/youtube_logo.jpg" alt="YouTube"></a>
+            <a href="#" class="social-btn"><img src="sn_logos/facebook_logo.jpg" alt="Facebook"></a>
+            <a href="#" class="social-btn"><img src="sn_logos/insta_logo.jpg" alt="Instagram"></a>
+            <a href="#" class="social-btn"><img src="sn_logos/tik_tok_logo.jpg" alt="TikTok"></a>
+            <a href="#" class="social-btn"><img src="sn_logos/Telegram_logo.jpg" alt="Telegram"></a>
+        </div>
+        <div class="footer-row">
+            <div class="contact-pill">
+                <div class="messenger-icons">
+                    <img src="sn_logos/viber_logo.jpg" alt="Viber">
+                    <img src="sn_logos/Telegram_logo.jpg" alt="Telegram">
+                    <img src="sn_logos/watsapp_logo.jpg" alt="WhatsApp">
+                </div>
+                <span>+38 (000) 000-00-00</span>
+            </div>
+            <a href="donate.html" class="nav-btn donate-btn">ДОНАТ</a>
+        </div>
+    </footer>
+
+    <!-- ЛАЙТБОКС -->
+    <div id="imageLightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; flex-direction:column; cursor:zoom-out; backdrop-filter: blur(5px);" onclick="closeLightbox()">
+        <span style="position:absolute; top:20px; right:40px; color:#fff; font-size:40px; font-weight:bold; cursor:pointer;">&times;</span>
+        <img id="lightboxImg" style="max-width:90%; max-height:90%; border-radius:8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); object-fit: contain;">
+    </div>
+
+    <script>
+        function openLightbox(imgSrc) {
+            document.getElementById('lightboxImg').src = imgSrc;
+            document.getElementById('imageLightbox').style.display = 'flex';
+        }
+        function closeLightbox() {
+            document.getElementById('imageLightbox').style.display = 'none';
+        }
+    </script>
+
+    <!-- СКРИПТИ -->
+    <script>
+        // 1. ДНІ ВІЙНИ
+        const startWar = new Date("2022-02-24");
+        const diffTime = Math.abs(new Date() - startWar);
+        document.getElementById("warDays").innerText = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        // 2. КАТЕГОРІЇ
+        const categoryMap = {
+            "mil_goods": { name: "Військова справа і екіпірування", img: "goods_types/mil_goods.jpg" },
+            "sport_goods": { name: "Спорт і здоров'я", img: "goods_types/sport_goods.jpg" },
+            "tour_goods": { name: "Туризм і походи", img: "goods_types/tour_goods.jpg" },
+            "work_goods": { name: "Інструменти та обладнання", img: "goods_types/work_goods.jpg" },
+            "trans_goods": { name: "Транспорт", img: "goods_types/trans_goods.jpg" },
+            "drone_goods": { name: "Дрони, запчастини", img: "goods_types/drone_goods.jpg" },
+            "com_goods": { name: "Електроніка і зв'язок", img: "goods_types/com_goods.jpg" },
+            "2hetd_goods": { name: "Барахолка", img: "goods_types/2hetd_goods.jpg" }
+        };
+
+        function renderMainCategories() {
+            let container = document.getElementById('mainCategories');
+            container.innerHTML = ''; 
+            for (const [key, data] of Object.entries(categoryMap)) {
+                container.innerHTML += `
+                    <a href="shop.html?category=${key}" class="category-card">
+                        <div class="category-img"><img src="${data.img}" alt="${data.name}"></div>
+                        <span>${data.name}</span>
+                    </a>
+                `;
+            }
+        }
+
+        // 4. МЕНЮ
+        function toggleMenu() {
+            document.getElementById('sideMenu').classList.toggle('open');
+            document.getElementById('menuOverlay').classList.toggle('open');
+        }
+
+        // 5. ЛІЧИЛЬНИКИ КНОПОК
+        function addLike(id) {
+            let el = document.getElementById(id);
+            el.innerText = parseInt(el.innerText) + 1;
+            el.style.color = "#98c379"; 
+            setTimeout(() => el.style.color = "white", 300);
+        }
+
+        // 6. КОМЕНТАРІ
+        let putinComments = [
+            { author: "Солдат Конфуційчук", text: "Абсолютно згоден!" },
+            { author: "Козак", text: "Чекаємо на хороші новини з бункера." },
+            { author: "Гість", text: "Слава ЗСУ!" }
+        ];
+
+        function sendComment() {
+            let input = document.getElementById('putinInput');
+            let text = input.value.trim();
+            
+            if (text !== '') {
+                let user = JSON.parse(localStorage.getItem('militaristica_user'));
+                let userName = user ? user.name : "Гість";
+                
+                putinComments.unshift({ author: userName, text: text });
+                document.getElementById('commentBtn').innerText = `💬 Коментарі (${putinComments.length})`;
+                input.value = '';
+                
+                document.getElementById('commentsPopup').classList.add('open');
+                document.getElementById('commentsOverlay').classList.add('open');
+                renderComments();
+            }
+        }
+
+        function toggleComments() {
+            document.getElementById('commentsPopup').classList.toggle('open');
+            document.getElementById('commentsOverlay').classList.toggle('open');
+            renderComments();
+        }
+
+        function renderComments() {
+            let list = document.getElementById('commentsList');
+            list.innerHTML = '';
+            putinComments.forEach(c => {
+                list.innerHTML += `
+                    <div class="comment-item">
+                        <div class="comment-author">${c.author}</div>
+                        <div>${c.text}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // 7. РУХОМА ФОТОСТРІЧКА
+        async function loadPhotostrip() {
+            try {
+                let res = await fetch('/api/media');
+                let mediaItems = await res.json();
+                
+                let track = document.getElementById('photoStripTrack');
+                if (!track) return;
+                track.innerHTML = '';
+
+                if (mediaItems.length === 0) {
+                    track.parentElement.style.display = 'none';
+                    return;
+                }
+                track.parentElement.style.display = 'block';
+
+                let fullList = [...mediaItems, ...mediaItems];
+
+                fullList.forEach(item => {
+                    let img = document.createElement('img');
+                    img.src = item.file_url;
+                    img.alt = "Militaristica Media";
+                    
+                    if (item.product_id && parseInt(item.product_id) > 0) {
+                        img.style.cursor = 'pointer';
+                        img.title = 'Перейти до товару';
+                        img.onclick = () => {
+                            window.location.href = `product.html?id=${item.product_id}`;
+                        };
+                    } else {
+                        img.onclick = () => {
+                            openLightbox(item.file_url);
+                        };
+                    }
+
+                    track.appendChild(img);
+                });
+            } catch (err) {
+                console.error("Помилка завантаження фотострічки:", err);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderMainCategories(); 
+            loadPhotostrip(); 
+            
+            let user = JSON.parse(localStorage.getItem('militaristica_user'));
+            if (user && document.getElementById('headerUserZone')) {
+                let av = user.avatar_url ? `<img src="${user.avatar_url}" class="user-avatar">` : `<div class="user-avatar">${user.name.charAt(0)}</div>`;
+                document.getElementById('headerUserZone').innerHTML = `
+                    <a href="profile.html" class="user-pill">
+                        ${av}<span>${user.name}</span>
+                    </a>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

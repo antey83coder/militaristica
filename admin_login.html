@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <title>Militaristica — Вхід в Адмінку</title>
+    
+    <!-- ================= ПОЧАТОК CSS ================= -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+        
+        body { background-color: #1a1e18; color: #ffffff; font-family: 'Roboto', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        
+        /* КОРОБКА ДЛЯ ФОРМИ ВХОДУ (По центру екрана) */
+        .login-box { background-color: #1f241d; border: 1px solid #a33333; border-radius: 8px; width: 100%; max-width: 400px; padding: 30px; box-sizing: border-box; box-shadow: 0 10px 20px rgba(0,0,0,0.5); text-align: center; }
+        .login-box img { max-height: 50px; margin-bottom: 20px; }
+        
+        h2 { margin-top: 0; font-size: 18px; color: #aaaaaa; margin-bottom: 25px; text-transform: uppercase; }
+        
+        /* Поля вводу */
+        .form-input { width: 100%; box-sizing: border-box; background-color: #2b3028; border: 1px solid #4a5444; color: #ffffff; padding: 12px; border-radius: 4px; font-size: 15px; outline: none; margin-bottom: 15px; }
+        .form-input:focus { border-color: #a33333; }
+        
+        /* Кнопка входу */
+        .btn-submit { background-color: #a33333; color: white; border: none; width: 100%; padding: 15px; border-radius: 6px; font-size: 16px; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-submit:hover { background-color: #bd3a3a; }
+
+        /* Посилання назад в магазин */
+        .back-link { display: inline-block; color: #888; text-decoration: none; margin-top: 20px; font-size: 13px; }
+        .back-link:hover { color: #fff; }
+    </style>
+</head>
+<body>
+
+    <!-- ================= HTML КАРКАС ================= -->
+    <div class="login-box">
+        <img src="logo.jpg" alt="Militaristica">
+        <h2>Панель управління</h2>
+        
+        <!-- onsubmit перехоплює відправку форми і запускає скрипт adminLogin() -->
+        <form onsubmit="adminLogin(event)">
+            <!-- Поле для пошти -->
+            <input type="email" id="adminEmail" class="form-input" placeholder="Електронна пошта" required>
+            <!-- Поле для СЕКРЕТНОГО пароля адмінки/продавця -->
+            <input type="password" id="adminPassword" class="form-input" placeholder="Секретний пароль продавця/адміна" required>
+            
+            <button type="submit" class="btn-submit">Увійти в систему</button>
+        </form>
+        
+        <a href="index.html" class="back-link">← Повернутися на головну</a>
+    </div>
+
+    <!-- ================= JAVASCRIPT (ЛОГІКА) ================= -->
+    <script>
+        // Перевірка: Якщо в пам'яті браузера вже є ключ militaristica_admin, значить людина вже залогінена.
+        // Перекидаємо її одразу на сторінку дашборду.
+        if (localStorage.getItem('militaristica_admin')) {
+            window.location.href = 'admin_dashboard.html';
+        }
+
+        // ФУНКЦІЯ: ОБРОБКА ВХОДУ
+        async function adminLogin(event) {
+            event.preventDefault();
+            let email = document.getElementById('adminEmail').value;
+            
+            // Імітуємо логін Головного Адміна
+            let dummyAdmin = {
+                id: 1,
+                user_id: 1,
+                name: "Адміністратор (Локально)",
+                email: email,
+                role: "admin" // Якщо хочеш перевірити права продавця, зміни "admin" на "seller"
+            };
+            
+            localStorage.setItem('militaristica_admin', JSON.stringify(dummyAdmin));
+            window.location.href = 'admin_dashboard.html';
+        }
+    </script>
+</body>
+</html>

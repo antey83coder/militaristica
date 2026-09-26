@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <title>Militaristica — Підтримка підрозділу</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+        body { background-color: #1a1e18; color: #ffffff; font-family: 'Roboto', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        /* ХЕДЕР */
+        .header { background-color: #1f241d; border-bottom: 2px solid #a33333; padding: 16px 35px; display: flex; justify-content: space-between; align-items: center; }
+        .header-logo img { max-height: 48px; }
+        .nav-menu { display: flex; gap: 15px; align-items: center; }
+        .nav-btn { color: #ffffff; text-decoration: none; font-size: 15px; font-weight: bold; padding: 10px 18px; background-color: #2b3028; border: 1px solid #4a5444; border-radius: 5px; transition: 0.2s; display: flex; align-items: center; justify-content: center; height: 20px;}
+        .nav-btn:hover { background-color: #3b4238; border-color: #e06c75; }
+        .nav-btn.btn-header-cart { background-color: #a33333; border-color: #b53b3b; font-weight: 900; }
+        .nav-btn.btn-header-cart:hover { background-color: #bd3a3a; }
+
+        .header-user-btn { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #ffffff; background: #2b3028; border: 1px solid #4a5444; padding: 5px 15px 5px 5px; border-radius: 25px; font-weight: bold; transition: 0.2s; height: 32px; }
+        .header-user-btn:hover { background-color: #3b4238; border-color: #a33333; }
+        .header-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #a33333; background-color: #a33333; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+
+        /* КАТЕГОРІЇ */
+        .categories-strip { display: flex; justify-content: center; gap: 12px; padding: 15px 10px; background-color: #141712; border-bottom: 1px solid #3b4238; overflow-x: auto; }
+        .category-item { background-color: #242922; border: 1px solid #3b4238; border-radius: 6px; padding: 8px; display: flex; flex-direction: column; align-items: center; width: 105px; text-decoration: none; color: #ffffff; transition: 0.2s; flex-shrink: 0; }
+        .category-item:hover { border-color: #a33333; transform: translateY(-2px); }
+        .category-icon { width: 55px; height: 55px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; }
+        .category-icon img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .category-item span { font-size: 10.5px; font-weight: bold; text-align: center; line-height: 1.2; }
+
+        /* КОНТЕНТ ДОНАТІВ */
+        .main-container { max-width: 1000px; margin: 40px auto; padding: 0 20px; flex-grow: 1; width: 100%; box-sizing: border-box; }
+        
+        .donate-header { text-align: center; margin-bottom: 40px; }
+        .donate-title { font-size: 36px; font-weight: 900; text-transform: uppercase; color: #ffffff; margin-bottom: 15px; letter-spacing: 1px; }
+        .donate-subtitle { font-size: 18px; color: #aaaaaa; line-height: 1.6; max-width: 800px; margin: 0 auto; }
+
+        .donate-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; }
+        @media(max-width: 768px) { .donate-grid { grid-template-columns: 1fr; } }
+
+        .info-card { background-color: #242922; border: 1px solid #4a5444; border-radius: 8px; padding: 30px; border-top: 4px solid #a33333; }
+        .info-card h2 { margin-top: 0; color: #ffffff; font-size: 22px; margin-bottom: 20px; }
+        .info-card p { color: #cccccc; line-height: 1.6; font-size: 15px; margin-bottom: 15px; }
+        .info-card ul { color: #cccccc; padding-left: 20px; line-height: 1.6; font-size: 15px; }
+        .info-card li { margin-bottom: 10px; }
+        .info-card strong { color: #e06c75; }
+
+        .payment-card { background-color: #1f241d; border: 1px solid #5a6353; border-radius: 8px; padding: 30px; text-align: center; display: flex; flex-direction: column; gap: 20px; }
+        
+        .qr-row { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .qr-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .qr-code-box { width: 150px; height: 150px; background-color: #ffffff; border-radius: 8px; padding: 10px; display: flex; align-items: center; justify-content: center; }
+        .qr-code-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .qr-label { font-size: 13px; color: #aaaaaa; font-weight: bold; text-transform: uppercase; }
+
+        .payment-buttons { display: flex; flex-direction: column; gap: 12px; }
+        .btn-mono { background-color: #000000; color: #ffffff; border: 2px solid #5a6353; padding: 15px; border-radius: 8px; font-size: 15px; font-weight: 900; text-decoration: none; text-transform: uppercase; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-mono:hover { border-color: #a33333; background-color: #111111; }
+        
+        .btn-privat { background-color: #6BA32A; color: #ffffff; border: 2px solid #5a6353; padding: 15px; border-radius: 8px; font-size: 15px; font-weight: 900; text-decoration: none; text-transform: uppercase; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-privat:hover { border-color: #85B942; background-color: #558221; }
+        
+        .details-box { background-color: #2b3028; border: 1px solid #4a5444; border-radius: 6px; padding: 15px; text-align: left; }
+        .detail-row { margin-bottom: 10px; }
+        .detail-row:last-child { margin-bottom: 0; }
+        .detail-label { font-size: 12px; color: #888888; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; display: block; }
+        .detail-value { font-family: monospace; font-size: 16px; color: #ffffff; font-weight: bold; background-color: #1a1e18; padding: 8px 12px; border-radius: 4px; border: 1px solid #3b4238; display: flex; justify-content: space-between; align-items: center; }
+        .btn-copy { background: none; border: none; color: #61afef; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .btn-copy:hover { color: #ffffff; }
+
+        /* ФУТЕР */
+        .footer-panel { background-color: #1a1e18; border-top: 1px solid #3b4238; padding: 20px 35px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: auto; gap: 20px; }
+        .footer-btn { background-color: #242922; color: #ffffff; border: 1px solid #5a6353; padding: 12px 24px; border-radius: 5px; text-decoration: none; font-weight: bold; font-size: 15px; transition: 0.2s; }
+        .footer-btn:hover { background-color: #3b4238; border-color: #e06c75; }
+        .footer-btn.cart { background-color: #31382f; border-color: #a33333; color: #ffffff; }
+        .footer-btn.cart:hover { background-color: #a33333; }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-logo"><a href="index.html"><img src="logo.jpg" alt="Militaristica"></a></div>
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-btn">Головна</a>
+            <a href="shop.html" class="nav-btn">Каталог</a>
+            <a href="cart.html" class="nav-btn btn-header-cart">🛒 КОШИК</a>
+            <div id="headerUserZone" style="display: inline-block;">
+                <a href="auth.html" class="nav-btn">Вхід / Реєстрація</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="categories-strip">
+        <a href="shop.html?category=mil_goods" class="category-item"><div class="category-icon"><img src="goods_types/mil_goods.jpg" alt=""></div><span>Військова справа і екіпірування</span></a>
+        <a href="shop.html?category=sport_goods" class="category-item"><div class="category-icon"><img src="goods_types/sport_goods.jpg" alt=""></div><span>Спорт і здоров'я</span></a>
+        <a href="shop.html?category=tour_goods" class="category-item"><div class="category-icon"><img src="goods_types/tour_goods.jpg" alt=""></div><span>Туризм і походи</span></a>
+        <a href="shop.html?category=work_goods" class="category-item"><div class="category-icon"><img src="goods_types/work_goods.jpg" alt=""></div><span>Інструменти та обладнання</span></a>
+        <a href="shop.html?category=trans_goods" class="category-item"><div class="category-icon"><img src="goods_types/trans_goods.jpg" alt=""></div><span>Транспорт</span></a>
+        <a href="shop.html?category=drone_goods" class="category-item"><div class="category-icon"><img src="goods_types/drone_goods.jpg" alt=""></div><span>Дрони, запчастини</span></a>
+        <a href="shop.html?category=com_goods" class="category-item"><div class="category-icon"><img src="goods_types/com_goods.jpg" alt=""></div><span>Електроніка і зв'язок</span></a>
+        <a href="shop.html?category=2hetd_goods" class="category-item"><div class="category-icon"><img src="goods_types/2hetd_goods.jpg" alt=""></div><span>Барахолка</span></a>
+    </div>
+
+    <main class="main-container">
+        <div class="donate-header">
+            <h1 class="donate-title">Підтримка підрозділу</h1>
+            <p class="donate-subtitle">Усі зібрані кошти спрямовуються виключно на посилення боєздатності Сил оборони, закупівлю обладнання для Сил Безпілотних Систем та ремонт наземних роботизованих комплексів (НРК).</p>
+        </div>
+
+        <div class="donate-grid">
+            <div class="info-card">
+                <h2>На що йдуть кошти?</h2>
+                <p>Ваша підтримка — це інвестиція у нашу здатність ефективно виконувати бойові завдання та берегти життя особового складу. Кожна гривня конвертується в технологічну перевагу над ворогом.</p>
+                <ul>
+                    <li><strong>Комплектуючі для БПЛА та НРК:</strong> антени, модулі зв'язку, контролери польоту, акумулятори та відеопередавачі.</li>
+                    <li><strong>Електроніка та зв'язок:</strong> радіостанції, антени виносного типу, кабелі, старлінки та зарядні станції.</li>
+                    <li><strong>Ремонтний фонд:</strong> витратні матеріали, інструменти, плати та деталі для швидкого відновлення наземних та повітряних безпілотних систем після уражень.</li>
+                    <li><strong>Транспорт:</strong> технічне обслуговування, ремонт та закупівля запчастин для екіпажних авто (гума, мастила, ходова).</li>
+                </ul>
+                <p style="margin-top: 25px; font-weight: bold; color: #98c379;">Дякуємо за довіру та підтримку! Разом до перемоги!</p>
+            </div>
+
+            <div class="payment-card">
+                <!-- Блок із двома QR-кодами -->
+                <div class="qr-row">
+                    <div class="qr-item">
+                        <div class="qr-code-box">
+                            <img src="QR_MONO.jpeg" alt="QR-код Монобанку">
+                        </div>
+                        <span class="qr-label">Монобанк</span>
+                    </div>
+                    <div class="qr-item">
+                        <div class="qr-code-box">
+                            <img src="QR_Privat.jpeg" alt="QR-код ПриватБанку">
+                        </div>
+                        <span class="qr-label">ПриватБанк</span>
+                    </div>
+                </div>
+                
+                <div class="payment-buttons">
+                    <a href="https://send.monobank.ua/jar/3K3sghb29v" target="_blank" rel="noopener noreferrer" class="btn-mono">
+                        🐈 Поповнити Банку
+                    </a>
+                    
+                    <a href="https://www.privat24.ua/send/4v2q0" target="_blank" rel="noopener noreferrer" class="btn-privat">
+                        ✉️ Поповнити Конверт
+                    </a>
+                </div>
+
+                <div class="details-box">
+                    <div class="detail-row">
+                        <span class="detail-label">Номер картки (Монобанк)</span>
+                        <div class="detail-value">
+                            <span id="cardNumber">4441 1144 2255 7788</span>
+                            <button class="btn-copy" onclick="copyText('cardNumber')">Копіювати</button>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">IBAN (для переказів з усіх банків)</span>
+                        <div class="detail-value">
+                            <span id="ibanNumber">UA033220010000026204350323443</span>
+                            <button class="btn-copy" onclick="copyText('ibanNumber')">Копіювати</button>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Призначення платежу</span>
+                        <div class="detail-value" style="font-family: sans-serif; font-size: 14px;">Благодійний внесок</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer-panel">
+        <div class="footer-btn-group">
+            <a href="auth.html" class="footer-btn">Реєстрація / Вхід</a>
+            <a href="shop.html" class="footer-btn">Магазин</a>
+            <a href="cart.html" class="footer-btn cart">🛒 КОШИК</a>
+        </div>
+    </footer>
+
+    <script>
+        // Скрипт для копіювання реквізитів
+        function copyText(elementId) {
+            let text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Реквізити скопійовано: " + text);
+            }).catch(err => {
+                console.error('Помилка копіювання: ', err);
+            });
+        }
+
+        // Універсальний скрипт для аватарки в шапці
+        document.addEventListener("DOMContentLoaded", () => {
+            let user = JSON.parse(localStorage.getItem('militaristica_user'));
+            if (user) {
+                let zone = document.getElementById('headerUserZone');
+                if (zone) {
+                    let avatarHtml = user.avatar_url 
+                        ? `<img src="${user.avatar_url}" class="header-avatar">` 
+                        : `<div class="header-avatar">${user.name.charAt(0)}</div>`;
+                    
+                    zone.innerHTML = `
+                        <a href="profile.html" class="header-user-btn">
+                            ${avatarHtml}
+                            <span>${user.name}</span>
+                        </a>
+                    `;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Militaristica — Замовлення</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: #e0e0e0; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 250px; background-color: #1e1e1e; border-right: 1px solid #333; display: flex; flex-direction: column; }
+        .sidebar-logo { padding: 20px; text-align: center; border-bottom: 1px solid #333; }
+        .sidebar-logo img { max-width: 80%; }
+        .sidebar-menu { display: flex; flex-direction: column; padding: 10px 0; flex-grow: 1; }
+        .menu-item { padding: 15px 20px; color: #aaa; text-decoration: none; border-left: 4px solid transparent; transition: 0.3s; }
+        .menu-item:hover, .menu-item.active { background-color: #282c34; color: #fff; border-left-color: #e06c75; }
+        .sidebar-bottom { padding: 20px; border-top: 1px solid #333; }
+        .btn-logout { width: 100%; padding: 12px; background-color: transparent; border: 1px solid #a33333; color: #e06c75; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.3s; }
+        .btn-logout:hover { background-color: #a33333; color: white; }
+
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .topbar { background-color: #1e1e1e; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        .topbar-title { font-size: 20px; font-weight: bold; color: #fff; text-transform: uppercase; }
+        
+        .content-area { padding: 30px; }
+
+        table { width: 100%; border-collapse: collapse; background-color: #1e1e1e; border-radius: 8px; overflow: hidden; margin-bottom: 30px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #333; font-size: 14px; vertical-align: top; }
+        th { background-color: #282c34; color: #aaa; }
+        
+        .order-items-list { margin: 0; padding-left: 15px; font-size: 13px; color: #ccc; }
+        .order-items-list li { margin-bottom: 4px; }
+
+        .status-select { background: #282c34; color: white; border: 1px solid #444; padding: 8px; border-radius: 4px; font-weight: bold; cursor: pointer; outline: none; }
+        .status-select:focus { border-color: #a33333; }
+
+        .badge-new { color: #e06c75; }
+        .badge-processing { color: #61afef; }
+        .badge-shipped { color: #98c379; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div>
+            <div class="sidebar-logo"><img src="logo.jpg" alt="Logo"></div>
+            <div class="sidebar-menu">
+                <a href="admin_dashboard.html" class="menu-item">📊 Головна (Дашборд)</a>
+                <a href="admin_orders.html" class="menu-item active">📦 Замовлення</a>
+                <a href="admin_products.html" class="menu-item">🛍️ Товари</a>
+                <a href="admin_users.html" class="menu-item" id="menuUsers">👥 Користувачі</a>
+            </div>
+        </div>
+        <div class="sidebar-bottom">
+            <button class="btn-logout" onclick="window.location.href='index.html'">НА ГОЛОВНУ</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <div class="topbar-title">Управління замовленнями</div>
+            <div id="topUserName" style="color: #aaa;"></div>
+        </div>
+
+        <div class="content-area">
+            <table>
+                <thead>
+                    <tr>
+                        <th>№ / Дата</th>
+                        <th>Клієнт / Контакти</th>
+                        <th>Доставка</th>
+                        <th>Товари в замовленні</th>
+                        <th>Сума</th>
+                        <th>Статус замовлення</th>
+                        <th>Оплата</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    <tr><td colspan="7" style="text-align: center; color: #888;">Завантаження замовлень...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let user = JSON.parse(localStorage.getItem('militaristica_user'));
+        if (!user || user.role === 'user') { window.location.href = 'index.html'; }
+
+        document.getElementById('topUserName').innerText = `Привіт, ${user.name}`;
+        if (user.role === 'seller') document.getElementById('menuUsers').style.display = 'none';
+
+        async function loadOrders() {
+            // Якщо адмін — бачить всі замовлення, якщо продавець — лише свої
+            let url = (user.role === 'admin') ? '/api/orders' : `/api/orders/seller/${user.id}`;
+            try {
+                let res = await fetch(url);
+                let orders = await res.json();
+                
+                let tbody = document.getElementById('ordersTableBody');
+                tbody.innerHTML = '';
+
+                if (orders.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #888; padding: 30px;">Замовлень поки немає</td></tr>`;
+                    return;
+                }
+
+                orders.forEach(o => {
+                    let itemsHtml = '';
+                    try {
+                        let items = JSON.parse(o.items_json);
+                        items.forEach(i => {
+                            itemsHtml += `<li><b>${i.title}</b> (Арт: ${i.sku}) — ${i.quantity} шт. по ${i.price} ₴</li>`;
+                        });
+                    } catch(e) {
+                        itemsHtml = `<li>${o.items_json}</li>`;
+                    }
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>
+                                <strong style="font-size: 16px; color: #e06c75;">#${o.id}</strong><br>
+                                <span style="font-size: 12px; color: #888;">${o.created_at}</span>
+                            </td>
+                            <td>
+                                <b>${o.customer_name}</b><br>
+                                <a href="tel:${o.phone}" style="color: #61afef; text-decoration: none;">📞 ${o.phone}</a>
+                            </td>
+                            <td>${o.delivery_info}</td>
+                            <td><ul class="order-items-list">${itemsHtml}</ul></td>
+                            <td><b style="color: #98c379; font-size: 16px;">${o.total_price} ₴</b></td>
+                            <td>
+                                <select class="status-select" onchange="updateOrderStatus(${o.id}, this.value)">
+                                    <option value="Нове" ${o.status === 'Нове' ? 'selected' : ''}>🔴 Нове</option>
+                                    <option value="В обробці" ${o.status === 'В обробці' ? 'selected' : ''}>🟡 В обробці</option>
+                                    <option value="Відправлено" ${o.status === 'Відправлено' ? 'selected' : ''}>🟢 Відправлено</option>
+                                    <option value="Виконано" ${o.status === 'Виконано' ? 'selected' : ''}>✅ Виконано</option>
+                                    <option value="Скасовано" ${o.status === 'Скасовано' ? 'selected' : ''}>❌ Скасовано</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="status-select" onchange="updatePaymentStatus(${o.id}, this.value)">
+                                    <option value="Очікує оплати" ${o.payment_status === 'Очікує оплати' ? 'selected' : ''}>⏳ Очікує оплати</option>
+                                    <option value="Оплачено" ${o.payment_status === 'Оплачено' ? 'selected' : ''}>💳 Оплачено</option>
+                                    <option value="Накладений платіж" ${o.payment_status === 'Накладений платіж' ? 'selected' : ''}>📦 Післяплата</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error("Помилка замовлень:", err);
+            }
+        }
+
+        async function updateOrderStatus(orderId, newStatus) {
+            let formData = new FormData();
+            formData.append("status", newStatus);
+            let res = await fetch(`/api/orders/status/${orderId}`, { 
+                method: 'POST', 
+                headers: { 'Authorization': 'Bearer ' + user.token },
+                body: formData 
+            });
+            if (!res.ok) alert("Не вдалося оновити статус замовлення. Можливо, закінчився час сесії (потрібно перелогінитись).");
+        }
+
+        async function updatePaymentStatus(orderId, newPaymentStatus) {
+            let formData = new FormData();
+            formData.append("payment_status", newPaymentStatus);
+            let res = await fetch(`/api/orders/payment-status/${orderId}`, { 
+                method: 'POST', 
+                headers: { 'Authorization': 'Bearer ' + user.token },
+                body: formData 
+            });
+            if (!res.ok) alert("Не вдалося оновити статус оплати. Можливо, закінчився час сесії (потрібно перелогінитись).");
+        }
+
+        document.addEventListener("DOMContentLoaded", loadOrders);
+    </script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мій Профіль — Militaristica</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #e0e0e0; margin: 0; padding: 0; }
+        header { background-color: #1e1e1e; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; }
+        header img { height: 40px; }
+        .nav-links a { color: #e0e0e0; text-decoration: none; margin-left: 20px; font-weight: bold; transition: color 0.3s; }
+        .nav-links a:hover { color: #98c379; }
+        .container { max-width: 800px; margin: 40px auto; padding: 20px; background-color: #1e1e1e; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .profile-header { display: flex; align-items: center; gap: 20px; border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px; }
+        .avatar-container { position: relative; width: 100px; height: 100px; }
+        .avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #5c6370; }
+        .avatar-upload { position: absolute; bottom: 0; right: 0; background-color: #e06c75; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 18px; }
+        .avatar-upload input { display: none; }
+        .user-info h1 { margin: 0; color: #fff; }
+        .user-info p { margin: 5px 0; color: #888; }
+        .rank-badge { display: inline-block; background-color: #98c379; color: #121212; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-top: 5px; }
+        .btn-red { background-color: #e06c75; color: #fff; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-decoration: none; }
+        .btn-red:hover { background-color: #c9515b; }
+        .seller-box { background-color: #282c34; border-left: 4px solid #e06c75; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        
+        /* Модальне вікно редагування */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #1e1e1e; padding: 25px; border-radius: 8px; width: 320px; text-align: center; }
+        .modal-content input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 4px; border: 1px solid #333; background: #282c34; color: white; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html"><img src="logo.jpg" alt="Militaristica Logo"></a>
+        <div class="nav-links">
+            <a href="index.html">Головна</a>
+            <a href="cart.html">Кошик</a>
+            <a href="#" onclick="logout()">Вийти</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="profile-header">
+            <div class="avatar-container">
+                <img src="" alt="Аватар" class="avatar" id="profileAvatar">
+                <label class="avatar-upload">
+                    +
+                    <input type="file" accept="image/*" onchange="uploadAvatar(this)">
+                </label>
+            </div>
+            <div class="user-info">
+                <h1 id="profileName">Завантаження...</h1>
+                <p id="profileEmail">...</p>
+                <p id="profileTelegram" style="font-size: 12px; color: #61afef; margin-top: 2px;">✈️ Telegram не підключено</p>
+                <div class="rank-badge" id="profileRank">Рекрут</div>
+            </div>
+            <button class="btn-red" style="margin-left: auto;" onclick="openEditModal()">Редагувати дані</button>
+        </div>
+
+        <h3>Мої замовлення</h3>
+        <p style="color: #888;">Ви ще нічого не замовляли.</p>
+
+        <!-- Блок для звичайних користувачів -->
+        <div class="seller-box" id="sellerBox" style="display: none;">
+            <h3 style="color: #e06c75; margin-top: 0;">Хочете продавати свої товари?</h3>
+            <p style="color: #888; font-size: 14px;">Станьте продавцем на Militaristica і отримайте доступ до панелі управління.</p>
+            <button class="btn-red" onclick="becomeSeller()">ПРОДАВАТИ</button>
+        </div>
+
+        <!-- Блок доступу до адмінки (для продавців/адмінів) -->
+        <div class="seller-box" id="adminBox" style="border-color: #98c379; display: none;">
+            <h3 style="color: #98c379; margin-top: 0;">Панель управління</h3>
+            <p style="color: #888; font-size: 14px;">Керуйте своїми товарами, замовленнями та налаштуваннями магазину.</p>
+            <a href="admin_dashboard.html" class="btn-red" style="background-color: #2e8b57; display: inline-block; text-align: center;">ПЕРЕЙТИ В АДМІНКУ</a>
+        </div>
+    </div>
+
+    <!-- Модальне вікно редагування -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h3 style="margin-top: 0;">Редагування профілю</h3>
+            <input type="text" id="editName" placeholder="Ваше ім'я">
+            <input type="email" id="editEmail" placeholder="Ваш Email">
+            
+            <div style="margin-top: 15px; text-align: left; background: #181b21; padding: 15px; border-radius: 6px; border: 1px solid #333;">
+                <label style="color: #61afef; font-size: 13px; font-weight: bold;">Сповіщення Telegram (Продавцям)</label>
+                <input type="text" id="editTelegram" placeholder="Ваш Telegram ID">
+                <p style="font-size: 11px; color: #888; margin: 5px 0 0 0; line-height: 1.4;">
+                    1. Знайдіть у Telegram бота <b>@getmyid_bot</b> та дізнайтеся свій ID (тільки цифри).<br>
+                    2. Впишіть його сюди.<br>
+                    3. Знайдіть у Telegram <b>свого бота</b> і натисніть /start.
+                </p>
+            </div>
+
+            <button class="btn-red" onclick="saveProfile()" style="width: 100%; margin-top: 20px;">Зберегти</button>
+            <button class="btn-red" onclick="closeEditModal()" style="width: 100%; margin-top: 10px; background: #5c6370;">Скасувати</button>
+        </div>
+    </div>
+
+    <script>
+        let user = JSON.parse(localStorage.getItem('militaristica_user'));
+
+        if (!user) {
+            window.location.href = 'auth.html';
+        }
+
+        function loadProfile() {
+            document.getElementById('profileName').innerText = user.name || "Без імені";
+            document.getElementById('profileEmail').innerText = user.email || "";
+            document.getElementById('profileAvatar').src = user.avatar_url || "https://via.placeholder.com/100?text=Фото";
+            
+            // Відображення Telegram
+            let tgStatus = document.getElementById('profileTelegram');
+            if (user.telegram_chat_id && user.telegram_chat_id.trim() !== "") {
+                tgStatus.innerHTML = `✈️ Telegram підключено: <b>${user.telegram_chat_id}</b>`;
+                tgStatus.style.color = "#98c379";
+            } else {
+                tgStatus.innerHTML = `✈️ Telegram не підключено`;
+                tgStatus.style.color = "#888";
+            }
+
+            let rankText = (user.role === 'admin') ? 'АДМІНІСТРАТОР' : (user.role === 'seller') ? 'ПРОДАВЕЦЬ' : 'РЕКРУТ';
+            document.getElementById('profileRank').innerText = rankText;
+
+            // Логіка відображення кнопок
+            if (user.role === 'user') {
+                document.getElementById('sellerBox').style.display = 'block';
+                document.getElementById('adminBox').style.display = 'none';
+            } else if (user.role === 'seller' || user.role === 'admin') {
+                document.getElementById('sellerBox').style.display = 'none';
+                document.getElementById('adminBox').style.display = 'block';
+            }
+        }
+
+        // Синхронізація профілю з сервером
+        async function syncProfileWithServer() {
+            let formData = new FormData();
+            formData.append("name", user.name);
+            formData.append("email", user.email);
+            formData.append("avatar_url", user.avatar_url || "");
+            formData.append("telegram_chat_id", user.telegram_chat_id || "");
+
+            try {
+                let response = await fetch(`/api/users/profile/${user.id}`, { 
+                    method: 'POST', 
+                    headers: { 'Authorization': 'Bearer ' + user.token }, // <--- ПЕРЕДАЄМО ТОКЕН
+                    body: formData 
+                });
+                if (response.ok) {
+                    localStorage.setItem('militaristica_user', JSON.stringify(user));
+                } else {
+                    console.error("Помилка збереження в базу! Можливо, токен недійсний.");
+                }
+            } catch(err) { console.error("Помилка сервера", err); }
+        }
+
+        function uploadAvatar(input) {
+            if (!input.files || !input.files[0]) return;
+            let reader = new FileReader();
+            reader.onload = async function(e) {
+                user.avatar_url = e.target.result;
+                loadProfile();
+                await syncProfileWithServer();
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+
+        function openEditModal() {
+            document.getElementById('editName').value = user.name || "";
+            document.getElementById('editEmail').value = user.email || "";
+            // Чітко беремо значення з об'єкта користувача
+            document.getElementById('editTelegram').value = user.telegram_chat_id || "";
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        async function saveProfile() {
+            let newName = document.getElementById('editName').value.trim();
+            let newEmail = document.getElementById('editEmail').value.trim();
+            let newTelegram = document.getElementById('editTelegram').value.trim();
+            
+            if(newName === "") { alert("Ім'я не може бути порожнім!"); return; }
+
+            let formData = new FormData();
+            formData.append("name", newName);
+            formData.append("email", newEmail);
+            formData.append("avatar_url", user.avatar_url || "");
+            formData.append("telegram_chat_id", newTelegram);
+
+            let res = await fetch(`/api/users/profile/${user.id}`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + user.token }, // <--- ПЕРЕДАЄМО ТОКЕН
+                body: formData
+            });
+
+            if (res.ok) {
+                user.name = newName;
+                user.email = newEmail;
+                user.telegram_chat_id = newTelegram;
+                localStorage.setItem('militaristica_user', JSON.stringify(user));
+                
+                alert("Профіль успішно оновлено!");
+                closeEditModal();
+                loadProfile();
+            } else {
+                alert("Помилка збереження профілю (недостатньо прав або токен застарів).");
+            }
+        }
+
+        async function becomeSeller() {
+            let user = JSON.parse(localStorage.getItem('militaristica_user'));
+            if (!user) return;
+            
+            let btn = event.target; 
+            let originalText = btn.innerText;
+            btn.innerText = "Відправляємо лист...";
+            btn.disabled = true;
+
+            try {
+                let res = await fetch(`/api/users/become-seller/${user.id}`, { method: 'POST' });
+                if (res.ok) {
+                    alert("✅ Перевірте вашу електронну пошту!\nМи надіслали посилання для підтвердження. Після переходу за посиланням вийдіть з акаунта і увійдіть знову.");
+                    btn.innerText = "Лист надіслано!";
+                } else {
+                    let err = await res.json();
+                    alert("Помилка: " + (err.detail || "Не вдалося відправити лист."));
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error("Помилка:", err);
+                alert("Помилка підключення до сервера.");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('militaristica_user');
+            window.location.href = 'index.html';
+        }
+
+        document.addEventListener("DOMContentLoaded", loadProfile);
+    </script>
+</body>
+</html>
