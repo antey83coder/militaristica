@@ -5,3 +5,4 @@ databases[sqlite]
 python-multipart
 pyjwt
 asyncpg
+psycopg[binary]
