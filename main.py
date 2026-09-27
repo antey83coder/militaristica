@@ -172,7 +172,6 @@ async def login_user(email: str = Form(...), password: str = Form(...)):
     if not verify_password(user_dict["password"], password):
         raise HTTPException(status_code=400, detail="Невірний Email або пароль!")
 
-    # ГЕНЕРУЄМО JWT ТОКЕН
     access_token = create_access_token(user_dict["id"])
 
     return {
@@ -205,7 +204,6 @@ async def update_user_rank(user_id: int, rank: str = Form(...), discount: int = 
     await database.execute(users.update().where(users.c.id == user_id).values(rank=rank, discount=discount, role=role))
     return {"status": "success"}
 
-# ЗАХИЩЕНИЙ МАРШРУТ (Вимагає JWT Токен)
 @app.post("/api/users/profile/{user_id}")
 async def update_my_profile(
     user_id: int, name: str = Form(...), email: str = Form(...), 
@@ -228,7 +226,7 @@ async def become_seller(user_id: int):
     token = str(uuid.uuid4())
     await database.execute(users.update().where(users.c.id == user_id).values(verify_token=token))
     
-    verify_link = f"https://militaristica-web.onrender.com/api/users/confirm-seller/{token}"
+    verify_link = f"https://militaristica.onrender.com/api/users/confirm-seller/{token}"
     GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwFKRRRJQtpdXDpBGiilLEA1nd84wjXMAlaPNYI_aw3HD3oR7jDevm7O2fzgjBsVPjJxw/exec"
     
     html_content = f"""
@@ -397,7 +395,6 @@ async def create_order(
         seller_dict = dict(seller)
         total_sum = sum([p['price'] * p['qty'] for p in prods])
         
-        # 1. ВІДПРАВКА НА ПОШТУ ЧЕРЕЗ GOOGLE API
         if seller_dict["email"]:
             try:
                 items_html = "".join([f"<li>[{p['sku']}] <b>{p['title']}</b> (x{p['qty']}) — {p['price'] * p['qty']} ₴</li>" for p in prods])
@@ -413,7 +410,6 @@ async def create_order(
             except Exception as e: 
                 print("Помилка Google API Email:", e)
         
-        # 2. ВІДПРАВКА В ТЕЛЕГРАМ
         if seller_dict.get("telegram_chat_id"):
             try:
                 items_text_tg = "\n".join([f"🔹 {p['title']} (x{p['qty']}) — {p['price'] * p['qty']} ₴" for p in prods])
@@ -484,6 +480,69 @@ async def delete_media(media_id: int, requester_id: int):
     await database.execute(media.delete().where(media.c.id == media_id))
     return {"status": "success"}
 
+# ================= OPEN GRAPH ТА СТАТИКА ================= #
+
+@app.get("/product.html", response_class=HTMLResponse)
+async def serve_product_page_with_og(id: int = 0):
+    # 1. Читаємо HTML файл сторінки товару
+    try:
+        with open("product.html", "r", encoding="utf-8") as f:
+            html_content = f.read()
+    except FileNotFoundError:
+        return HTMLResponse("Помилка: файл product.html не знайдено", status_code=404)
+
+    # Якщо ID не передано — віддаємо звичайну сторінку
+    if not id:
+        return HTMLResponse(content=html_content)
+
+    # 2. Шукаємо товар у базі
+    prod = await database.fetch_one(products.select().where(products.c.id == id))
+    if not prod:
+        return HTMLResponse(content=html_content)
+
+    prod_dict = dict(prod)
+    
+    # 3. Формуємо правильне посилання на картинку (беремо першу картинку)
+    image_urls = prod_dict.get("image_urls", "")
+    first_image = image_urls.split(",")[0] if image_urls else "logo.png"
+    BASE_URL = "https://militaristica.onrender.com"
+    
+    if not first_image.startswith("http"):
+        clean_img = first_image.lstrip("/")
+        full_image_url = f"{BASE_URL}/{clean_img}"
+    else:
+        full_image_url = first_image
+
+    # 4. Формуємо тексти для мета-тегів
+    title = f"{prod_dict['title']} — Militaristica"
+    price = f"{prod_dict['price']} грн"
+    desc_raw = prod_dict.get('description', '')
+    description = f"Ціна: {price}. {desc_raw[:150]}..."
+    canonical_url = f"{BASE_URL}/product.html?id={id}"
+
+    og_tags = f"""
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="product" />
+    <meta property="og:site_name" content="Militaristica" />
+    <meta property="og:title" content="{title}" />
+    <meta property="og:description" content="{description}" />
+    <meta property="og:image" content="{full_image_url}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url" content="{canonical_url}" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="{title}" />
+    <meta name="twitter:description" content="{description}" />
+    <meta name="twitter:image" content="{full_image_url}" />
+    """
+
+    # 5. Підставляємо згенеровані теги замість маркера
+    rendered_html = html_content.replace("<!-- OG_META_TAGS -->", og_tags)
+    return HTMLResponse(content=rendered_html)
+
+# Монтування статичних файлів завжди має бути В САМОМУ КІНЦІ
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.mount("/goods_types", StaticFiles(directory="goods_types"), name="goods_types")
 app.mount("/sn_logos", StaticFiles(directory="sn_logos"), name="sn_logos")
