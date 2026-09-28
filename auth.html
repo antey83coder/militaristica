@@ -37,7 +37,18 @@
             <form onsubmit="handleLogin(event)">
                 <!-- Додано name та autocomplete для коректної роботи браузера -->
                 <input type="email" id="logEmail" name="email" autocomplete="email" class="form-input" placeholder="Електронна пошта" required>
-                <input type="password" id="logPass" name="password" autocomplete="current-password" class="form-input" placeholder="Пароль" required>
+                
+                <div style="margin-bottom: 15px;">
+                    <!-- Поле пароля для входу -->
+                    <input type="password" id="loginPassword" name="password" placeholder="Пароль" required style="width: 100%; padding: 10px; box-sizing: border-box; border-radius: 4px; border: none; background: #e8f0fe;">
+                    
+                    <!-- Галочка "Показати пароль" -->
+                    <label style="font-size: 13px; color: #8fa77b; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-top: 8px;">
+                        <input type="checkbox" onchange="const el = document.getElementById('loginPassword'); el.type = el.type === 'password' ? 'text' : 'password';">
+                        Показати пароль
+                    </label>
+                </div>
+
                 <button type="submit" class="btn-submit">УВІЙТИ</button>
             </form>
         </div>
@@ -48,7 +59,18 @@
                 <!-- Додано name та відповідні autocomplete (name, email, new-password) -->
                 <input type="text" id="regName" name="name" autocomplete="name" class="form-input" placeholder="Ваш позивний або ПІБ" required>
                 <input type="email" id="regEmail" name="email" autocomplete="email" class="form-input" placeholder="Електронна пошта" required>
-                <input type="password" id="regPass" name="password" autocomplete="new-password" class="form-input" placeholder="Придумайте пароль" required>
+                
+                <div style="margin-bottom: 15px;">
+                    <!-- Поле пароля для реєстрації -->
+                    <input type="password" id="regPassword" name="password" placeholder="Придумайте пароль" required style="width: 100%; padding: 10px; box-sizing: border-box; border-radius: 4px; border: none; background: #e8f0fe;">
+                    
+                    <!-- Галочка "Показати пароль" -->
+                    <label style="font-size: 13px; color: #8fa77b; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-top: 8px;">
+                        <input type="checkbox" onchange="const el = document.getElementById('regPassword'); el.type = el.type === 'password' ? 'text' : 'password';">
+                        Показати пароль
+                    </label>
+                </div>
+                
                 <button type="submit" class="btn-submit">СТВОРИТИ АКАУНТ</button>
             </form>
         </div>
