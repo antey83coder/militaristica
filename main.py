@@ -14,15 +14,19 @@ import urllib.request
 import urllib.parse
 import hashlib
 import jwt
+import base64
 
-# Створюємо необхідні папки для медіафайлів
+# ================= НАЛАШТУВАННЯ ================= #
+# Твій API ключ від сервісу ImgBB для вічного зберігання картинок
+IMGBB_API_KEY = "0622c07513943192add7076ce8eb167e"
+
+# Створюємо необхідні папки для статичних файлів
 for folder in ["uploads", "goods_types", "sn_logos", "forses_logos"]:
     os.makedirs(folder, exist_ok=True)
 
 # Отримуємо URL бази: якщо є змінна в Render — береться хмарний Postgres, інакше — локальний SQLite
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./militaristica.db")
 
-# Render/Neon іноді передає postgres://, а для SQLAlchemy/databases потрібен префікс postgresql://
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
@@ -62,6 +66,21 @@ def verify_token(request: Request):
         return int(payload.get("sub"))
     except Exception:
         raise HTTPException(status_code=401, detail="Токен недійсний або прострочений")
+
+# --- ФУНКЦІЯ ЗАВАНТАЖЕННЯ НА IMGBB ---
+async def upload_to_imgbb(file: UploadFile) -> str:
+    """Відправляє файл на ImgBB і повертає пряме посилання на картинку."""
+    try:
+        file_content = await file.read()
+        base64_image = base64.b64encode(file_content).decode('utf-8')
+        data = urllib.parse.urlencode({"key": IMGBB_API_KEY, "image": base64_image}).encode('utf-8')
+        req = urllib.request.Request("https://api.imgbb.com/1/upload", data=data, method="POST")
+        response = urllib.request.urlopen(req)
+        result = json.loads(response.read())
+        return result["data"]["url"]
+    except Exception as e:
+        print(f"Помилка завантаження на ImgBB: {e}")
+        return ""
 
 # --- ТАБЛИЦІ БАЗИ ДАНИХ ---
 products = sqlalchemy.Table(
@@ -124,7 +143,6 @@ media = sqlalchemy.Table(
     sqlalchemy.Column("product_id", sqlalchemy.Integer, default=0),
 )
 
-# Для SQLite потрібен параметр check_same_thread, а для Postgres його передавати не можна
 if "sqlite" in DATABASE_URL:
     engine = sqlalchemy.create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 else:
@@ -289,8 +307,9 @@ async def add_product(
     saved_images = []
     for f in files:
         if f.filename:
-            with open(f"uploads/{f.filename}", "wb") as buffer: shutil.copyfileobj(f.file, buffer)
-            saved_images.append(f"/uploads/{f.filename}")
+            url = await upload_to_imgbb(f)
+            if url:
+                saved_images.append(url)
 
     await database.execute(products.insert().values(
         title=title, categories=",".join(selected_cats), price=price, stock=stock, sku=auto_sku,
@@ -317,8 +336,9 @@ async def update_product(
     if files and len(files) > 0 and files[0].filename:
         for f in files:
             if f.filename:
-                with open(f"uploads/{f.filename}", "wb") as buffer: shutil.copyfileobj(f.file, buffer)
-                final_images.append(f"/uploads/{f.filename}")
+                url = await upload_to_imgbb(f)
+                if url:
+                    final_images.append(url)
 
     await database.execute(products.update().where(products.c.id == product_id).values(
         title=title, categories=",".join([c.strip() for c in categories.split(",") if c.strip()]),
@@ -469,8 +489,9 @@ async def upload_media(requester_id: int = Form(...), product_id: int = Form(0),
     if not user or user["role"] != "admin": raise HTTPException(status_code=403, detail="Лише адміністратор.")
     for f in files:
         if f.filename:
-            with open(f"uploads/{f.filename}", "wb") as buffer: shutil.copyfileobj(f.file, buffer)
-            await database.execute(media.insert().values(file_url=f"/uploads/{f.filename}", media_type="photostrip", media_format="image", product_id=product_id))
+            url = await upload_to_imgbb(f)
+            if url:
+                await database.execute(media.insert().values(file_url=url, media_type="photostrip", media_format="image", product_id=product_id))
     return {"status": "success"}
 
 @app.delete("/api/media/{media_id}")
@@ -481,28 +502,20 @@ async def delete_media(media_id: int, requester_id: int):
     return {"status": "success"}
 
 # ================= OPEN GRAPH ТА СТАТИКА ================= #
-
 @app.get("/product.html", response_class=HTMLResponse)
 async def serve_product_page_with_og(id: int = 0):
-    # 1. Читаємо HTML файл сторінки товару
     try:
         with open("product.html", "r", encoding="utf-8") as f:
             html_content = f.read()
     except FileNotFoundError:
         return HTMLResponse("Помилка: файл product.html не знайдено", status_code=404)
 
-    # Якщо ID не передано — віддаємо звичайну сторінку
-    if not id:
-        return HTMLResponse(content=html_content)
+    if not id: return HTMLResponse(content=html_content)
 
-    # 2. Шукаємо товар у базі
     prod = await database.fetch_one(products.select().where(products.c.id == id))
-    if not prod:
-        return HTMLResponse(content=html_content)
+    if not prod: return HTMLResponse(content=html_content)
 
     prod_dict = dict(prod)
-    
-    # 3. Формуємо правильне посилання на картинку (беремо першу картинку)
     image_urls = prod_dict.get("image_urls", "")
     first_image = image_urls.split(",")[0] if image_urls else "logo.png"
     BASE_URL = "https://militaristica.onrender.com"
@@ -513,7 +526,6 @@ async def serve_product_page_with_og(id: int = 0):
     else:
         full_image_url = first_image
 
-    # 4. Формуємо тексти для мета-тегів
     title = f"{prod_dict['title']} — Militaristica"
     price = f"{prod_dict['price']} грн"
     desc_raw = prod_dict.get('description', '')
@@ -538,11 +550,9 @@ async def serve_product_page_with_og(id: int = 0):
     <meta name="twitter:image" content="{full_image_url}" />
     """
 
-    # 5. Підставляємо згенеровані теги замість маркера
     rendered_html = html_content.replace("<!-- OG_META_TAGS -->", og_tags)
     return HTMLResponse(content=rendered_html)
 
-# Монтування статичних файлів завжди має бути В САМОМУ КІНЦІ
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.mount("/goods_types", StaticFiles(directory="goods_types"), name="goods_types")
 app.mount("/sn_logos", StaticFiles(directory="sn_logos"), name="sn_logos")
