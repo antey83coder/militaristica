@@ -35,38 +35,37 @@
         <!-- Форма ВХОДУ -->
         <div id="box-login" class="form-box active">
             <form onsubmit="handleLogin(event)">
-                <!-- Додано name та autocomplete для коректної роботи браузера -->
                 <input type="email" id="logEmail" name="email" autocomplete="email" class="form-input" placeholder="Електронна пошта" required>
                 
                 <div style="margin-bottom: 15px;">
-                    <!-- Поле пароля для входу -->
-                    <input type="password" id="loginPassword" name="password" placeholder="Пароль" required style="width: 100%; padding: 10px; box-sizing: border-box; border-radius: 4px; border: none; background: #e8f0fe;">
+                    <input type="password" id="logPass" name="password" placeholder="Пароль" required style="width: 100%; padding: 10px; box-sizing: border-box; border-radius: 4px; border: none; background: #e8f0fe;">
                     
-                    <!-- Галочка "Показати пароль" -->
                     <label style="font-size: 13px; color: #8fa77b; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-top: 8px;">
-                        <input type="checkbox" onchange="const el = document.getElementById('loginPassword'); el.type = el.type === 'password' ? 'text' : 'password';">
+                        <input type="checkbox" onchange="const el = document.getElementById('logPass'); el.type = el.type === 'password' ? 'text' : 'password';">
                         Показати пароль
                     </label>
                 </div>
 
                 <button type="submit" class="btn-submit">УВІЙТИ</button>
+                
+                <!-- Кнопка відновлення пароля -->
+                <div style="text-align: right; margin-top: 15px;">
+                    <a href="#" onclick="forgotPassword(); return false;" style="color: #a33333; font-size: 13px; text-decoration: none;">Забули пароль?</a>
+                </div>
             </form>
         </div>
 
         <!-- Форма РЕЄСТРАЦІЇ -->
         <div id="box-register" class="form-box">
             <form onsubmit="handleRegister(event)">
-                <!-- Додано name та відповідні autocomplete (name, email, new-password) -->
                 <input type="text" id="regName" name="name" autocomplete="name" class="form-input" placeholder="Ваш позивний або ПІБ" required>
                 <input type="email" id="regEmail" name="email" autocomplete="email" class="form-input" placeholder="Електронна пошта" required>
                 
                 <div style="margin-bottom: 15px;">
-                    <!-- Поле пароля для реєстрації -->
-                    <input type="password" id="regPassword" name="password" placeholder="Придумайте пароль" required style="width: 100%; padding: 10px; box-sizing: border-box; border-radius: 4px; border: none; background: #e8f0fe;">
+                    <input type="password" id="regPass" name="password" placeholder="Придумайте пароль" required style="width: 100%; padding: 10px; box-sizing: border-box; border-radius: 4px; border: none; background: #e8f0fe;">
                     
-                    <!-- Галочка "Показати пароль" -->
                     <label style="font-size: 13px; color: #8fa77b; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-top: 8px;">
-                        <input type="checkbox" onchange="const el = document.getElementById('regPassword'); el.type = el.type === 'password' ? 'text' : 'password';">
+                        <input type="checkbox" onchange="const el = document.getElementById('regPass'); el.type = el.type === 'password' ? 'text' : 'password';">
                         Показати пароль
                     </label>
                 </div>
@@ -78,7 +77,6 @@
         <a href="index.html" class="back-link">← Повернутися на головну</a>
     </div>
 
-    <!-- ТУТ ПОВИНЕН БУТИ JAVASCRIPT -->
     <script>
         // Перемикання вкладок
         function switchTab(tab) {
@@ -96,28 +94,25 @@
             e.preventDefault();
             let name = document.getElementById('regName').value;
             let email = document.getElementById('regEmail').value;
-            let password = document.getElementById('regPass').value;
+            let password = document.getElementById('regPass').value; // Виправлено
 
-            // Запаковуємо дані у формат "Справжньої Форми" (FormData), бо сервер очікує Form(...)
             let formData = new FormData();
             formData.append("name", name);
             formData.append("email", email);
             formData.append("password", password);
 
             try {
-                // Відправляємо за правильною адресою з твого main.py
                 let response = await fetch('/api/auth/register', {
                     method: 'POST',
-                    body: formData // Зверни увагу: тут більше немає JSON.stringify
+                    body: formData 
                 });
 
                 if (response.ok) {
                     alert("Реєстрація успішна! Тепер увійдіть у свій акаунт.");
                     switchTab('login');
                     document.getElementById('logEmail').value = email;
-                    document.getElementById('logPass').value = '';
+                    document.getElementById('logPass').value = ''; // Виправлено
                 } else {
-                    // Якщо помилка (наприклад, Email вже існує) — читаємо деталі від FastAPI
                     let err = await response.json();
                     alert("Помилка реєстрації: " + (err.detail || "Невідома помилка"));
                 }
@@ -131,7 +126,7 @@
         async function handleLogin(e) {
             e.preventDefault();
             let email = document.getElementById('logEmail').value;
-            let password = document.getElementById('logPass').value;
+            let password = document.getElementById('logPass').value; // Виправлено
 
             let formData = new FormData();
             formData.append("email", email);
@@ -154,7 +149,7 @@
                         role: userData.role,
                         avatar_url: userData.avatar_url,
                         telegram_chat_id: userData.telegram_chat_id || "",
-                        token: userData.access_token // <--- ЗБЕРІГАЄМО ТОКЕН!
+                        token: userData.access_token 
                     };
                     
                     localStorage.setItem('militaristica_user', JSON.stringify(finalUser));
@@ -169,6 +164,22 @@
             }
         }
 
+        // ВІДНОВЛЕННЯ ПАРОЛЯ
+        async function forgotPassword() {
+            const email = prompt("Введіть ваш Email для відновлення пароля:");
+            if (!email) return;
+            
+            const fd = new FormData();
+            fd.append("email", email);
+            
+            try {
+                const res = await fetch("/api/auth/forgot-password", { method: "POST", body: fd });
+                const data = await res.json();
+                alert(data.message || "Інструкції надіслано на пошту.");
+            } catch (e) {
+                alert("Помилка зв'язку з сервером.");
+            }
+        }
     </script>
 </body>
 </html>
