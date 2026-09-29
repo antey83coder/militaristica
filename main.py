@@ -593,21 +593,32 @@ async def serve_product_page_with_og(id: int = 0):
     price = f"{prod_dict['price']} грн"
     desc_raw = prod_dict.get('description', '')
     description = f"Ціна: {price}. {desc_raw[:150]}..."
+    
+    # ЗАХИСТ ВІД ЛАПОК: замінюємо лапки, щоб вони не ламали HTML-теги Фейсбуку
+    safe_title = title.replace('"', '&quot;').replace("'", '&#39;')
+    safe_desc = description.replace('"', '&quot;').replace("'", '&#39;')
     canonical_url = f"{BASE_URL}/product.html?id={id}"
 
     og_tags = f"""
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="product" />
     <meta property="og:site_name" content="Militaristica" />
-    <meta property="og:title" content="{title}" />
-    <meta property="og:description" content="{description}" />
+    <meta property="og:title" content="{safe_title}" />
+    <meta property="og:description" content="{safe_desc}" />
     <meta property="og:image" content="{full_image_url}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:url" content="{canonical_url}" />
     """
 
-    rendered_html = html_content.replace("<!-- OG_META_TAGS -->", og_tags)
+    # Гарантоване вставлення тегів перед закриваючим тегом head
+    if "<!-- OG_META_TAGS -->" in html_content:
+        rendered_html = html_content.replace("<!-- OG_META_TAGS -->", og_tags)
+    elif "</head>" in html_content:
+        rendered_html = html_content.replace("</head>", f"{og_tags}\n</head>")
+    else:
+        rendered_html = html_content
+
     return HTMLResponse(content=rendered_html)
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
