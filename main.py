@@ -15,9 +15,10 @@ import urllib.parse
 import hashlib
 import jwt
 import base64
+import asyncio
 
 # ================= НАЛАШТУВАННЯ ================= #
-IMGBB_API_KEY = "ВСТАВ_СВІЙ_КЛЮЧ_СЮДИ"
+IMGBB_API_KEY = "0622c07513943192add7076ce8eb167e"
 
 for folder in ["uploads", "goods_types", "sn_logos", "forses_logos"]:
     os.makedirs(folder, exist_ok=True)
@@ -62,17 +63,14 @@ def verify_token(request: Request):
     except Exception:
         raise HTTPException(status_code=401, detail="Токен недійсний або прострочений")
 
-# --- НАДІЙНА ФУНКЦІЯ ЗАВАНТАЖЕННЯ НА IMGBB ---
+# --- НАДІЙНА ФУНКЦІЯ ЗАВАНТАЖЕННЯ НА IMGBB (Асинхронна) ---
 async def upload_to_imgbb(file: UploadFile) -> str:
     try:
         file_content = await file.read()
         if not file_content:
             return ""
         
-        # Кодуємо в base64
         base64_image = base64.b64encode(file_content).decode('utf-8')
-        
-        # Формуємо дані для запиту через urllib
         payload = urllib.parse.urlencode({
             "key": IMGBB_API_KEY,
             "image": base64_image
@@ -85,9 +83,12 @@ async def upload_to_imgbb(file: UploadFile) -> str:
             method="POST"
         )
         
-        with urllib.request.urlopen(req) as response:
-            result = json.loads(response.read().decode('utf-8'))
-            return result.get("data", {}).get("url", "")
+        # Запускаємо блокуючий urllib в окремому потоці, щоб не вішати сервер
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(None, urllib.request.urlopen, req)
+        
+        result = json.loads(response.read().decode('utf-8'))
+        return result.get("data", {}).get("url", "")
             
     except Exception as e:
         print(f"Помилка завантаження на ImgBB: {e}")
