@@ -378,7 +378,8 @@ async def add_product(
     for f in files:
         if f.filename:
             url = await upload_to_imgbb(f)
-            if url: saved_images.append(url)
+            if url: 
+                saved_images.append(url)
 
     await database.execute(products.insert().values(
         title=title, categories=",".join(selected_cats), price=price, stock=stock, sku=auto_sku,
