@@ -291,6 +291,19 @@ async def reset_password(token: str = Form(...), new_password: str = Form(...)):
     await database.execute(users.update().where(users.c.id == user["id"]).values(password=new_hash, verify_token=""))
     return {"status": "success", "message": "Пароль успішно змінено. Тепер ви можете увійти!"}
 
+# --- ФУНКЦІЯ ВИДАЛЕННЯ КОРИСТУВАЧА ---
+@app.delete("/api/users/{user_id}")
+async def delete_user(user_id: int, current_user_id: int = Depends(verify_token)):
+    admin = await database.fetch_one(users.select().where(users.c.id == current_user_id))
+    if not admin or admin["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Тільки адміністратор може видаляти користувачів.")
+    
+    if user_id == current_user_id:
+        raise HTTPException(status_code=400, detail="Ви не можете видалити власний акаунт.")
+
+    await database.execute(users.delete().where(users.c.id == user_id))
+    return {"status": "success"}
+
 @app.get("/api/users")
 async def get_all_users():
     all_users = await database.fetch_all(users.select().order_by(users.c.id.desc()))
