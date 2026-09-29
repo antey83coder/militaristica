@@ -565,6 +565,13 @@ async def delete_media(media_id: int, requester_id: int):
     return {"status": "success"}
 
 # ================= OPEN GRAPH ТА СТАТИКА ================= #
+from fastapi.responses import PlainTextResponse
+
+# Офіційний дозвіл для сканерів Фейсбуку (щоб уникнути помилки 403)
+@app.get("/robots.txt", response_class=PlainTextResponse)
+async def get_robots():
+    return "User-agent: *\nAllow: /\nUser-agent: facebookexternalhit\nAllow: /\nUser-agent: Facebot\nAllow: /"
+
 @app.get("/product.html", response_class=HTMLResponse)
 async def serve_product_page_with_og(id: int = 0):
     try:
