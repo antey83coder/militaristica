@@ -25,7 +25,13 @@
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #333; }
         th { background-color: #282c34; color: #aaa; }
         select, input { padding: 5px; background: #121212; color: white; border: 1px solid #444; border-radius: 4px; }
-        .btn-green { background-color: #98c379; color: #121212; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        
+        /* Стилі для кнопок дій */
+        .action-buttons { display: flex; gap: 8px; }
+        .btn-green { background-color: #98c379; color: #121212; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-green:hover { background-color: #7cb05a; }
+        .btn-red-small { background-color: #e06c75; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-red-small:hover { background-color: #c9515b; }
     </style>
 </head>
 <body>
@@ -109,7 +115,10 @@
                             </td>
                             <td><input type="number" id="disc_${u.id}" value="${u.discount}" style="width: 60px;"></td>
                             <td>
-                                <button class="btn-green" onclick="saveUser(${u.id})">Зберегти</button>
+                                <div class="action-buttons">
+                                    <button class="btn-green" onclick="saveUser(${u.id})">Зберегти</button>
+                                    <button class="btn-red-small" onclick="deleteUser(${u.id}, '${u.name}')">Видалити</button>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -134,6 +143,35 @@
                 if (res.ok) alert("Дані користувача оновлено в базі!");
                 else alert("Помилка!");
             } catch (err) { console.error(err); }
+        }
+
+        // ВИДАЛЯЄМО КОРИСТУВАЧА З БД
+        async function deleteUser(id, name) {
+            // Запобіжник від видалення самого себе
+            if (id === user.id) {
+                alert("Ви не можете видалити власний акаунт!");
+                return;
+            }
+
+            if(confirm(`УВАГА!\nВи дійсно хочете назавжди видалити користувача "${name}"?\nЦю дію неможливо скасувати.`)) {
+                try {
+                    let res = await fetch(`/api/users/${id}`, { 
+                        method: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + user.token }
+                    });
+                    
+                    if (res.ok) {
+                        alert("Користувача успішно видалено.");
+                        loadUsers(); // Перезавантажуємо таблицю
+                    } else {
+                        let err = await res.json();
+                        alert("Помилка: " + (err.detail || "Не вдалося видалити користувача."));
+                    }
+                } catch (err) { 
+                    console.error(err); 
+                    alert("Помилка зв'язку з сервером.");
+                }
+            }
         }
 
         function logout() { localStorage.removeItem('militaristica_user'); window.location.href = 'index.html'; }
