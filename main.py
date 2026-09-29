@@ -62,15 +62,33 @@ def verify_token(request: Request):
     except Exception:
         raise HTTPException(status_code=401, detail="Токен недійсний або прострочений")
 
+# --- НАДІЙНА ФУНКЦІЯ ЗАВАНТАЖЕННЯ НА IMGBB ---
 async def upload_to_imgbb(file: UploadFile) -> str:
     try:
         file_content = await file.read()
+        if not file_content:
+            return ""
+        
+        # Кодуємо в base64
         base64_image = base64.b64encode(file_content).decode('utf-8')
-        data = urllib.parse.urlencode({"key": IMGBB_API_KEY, "image": base64_image}).encode('utf-8')
-        req = urllib.request.Request("https://api.imgbb.com/1/upload", data=data, method="POST")
-        response = urllib.request.urlopen(req)
-        result = json.loads(response.read())
-        return result["data"]["url"]
+        
+        # Формуємо дані для запиту через urllib
+        payload = urllib.parse.urlencode({
+            "key": IMGBB_API_KEY,
+            "image": base64_image
+        }).encode('utf-8')
+        
+        req = urllib.request.Request(
+            "https://api.imgbb.com/1/upload", 
+            data=payload, 
+            headers={"Content-Type": "application/x-www-form-urlencoded"}, 
+            method="POST"
+        )
+        
+        with urllib.request.urlopen(req) as response:
+            result = json.loads(response.read().decode('utf-8'))
+            return result.get("data", {}).get("url", "")
+            
     except Exception as e:
         print(f"Помилка завантаження на ImgBB: {e}")
         return ""
