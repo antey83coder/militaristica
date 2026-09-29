@@ -47,9 +47,11 @@
             display: flex; justify-content: center; align-items: center; text-decoration: none; transition: 0.3s;
         }
         .btn-green { background-color: #98c379; color: #121212; margin-bottom: 0; }
-        .btn-green:hover { background-color: #7cb05a; }
+        .btn-green:hover:not(:disabled) { background-color: #7cb05a; }
+        .btn-green:disabled { background-color: #5c6370; cursor: not-allowed; }
         .btn-red { background-color: #e06c75; color: white; margin-bottom: 0; }
-        .btn-red:hover { background-color: #c9515b; }
+        .btn-red:hover:not(:disabled) { background-color: #c9515b; }
+        .btn-red:disabled { background-color: #5c6370; cursor: not-allowed; }
         
         .action-cell { display: flex; gap: 10px; }
         .btn-blue-small, .btn-red-small { flex: 1; padding: 10px 0; text-align: center; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
@@ -113,16 +115,13 @@
         <div class="content-area">
             
             <div class="actions-top-row">
-                <!-- Кнопка додавання товару -->
                 <button class="btn-green" onclick="openProductModal()">+ Додати новий товар</button>
 
-                <!-- ВИПАДАЮЧИЙ СПИСОК ФІЛЬТРАЦІЇ ЗА ПРОДАВЦЯМИ -->
                 <div class="dropdown-filter-container" id="filterDropdownWrapper" style="display: none;">
                     <button type="button" class="dropdown-filter-btn" onclick="toggleSellerDropdown()">
                         Фільтр за продавцями ▾
                     </button>
                     <div class="dropdown-filter-content" id="sellerDropdownContent">
-                        <!-- Список формується динамічно зі списком і чек-боксами -->
                     </div>
                 </div>
             </div>
@@ -144,7 +143,6 @@
         </div>
     </div>
 
-    <!-- Модальне вікно -->
     <div class="modal" id="productModal">
         <div class="modal-content">
             <h2 id="modalTitle" style="margin-top: 0;">Додати товар</h2>
@@ -208,8 +206,8 @@
                 </div>
                 
                 <div class="modal-buttons">
-                    <button type="button" class="btn-green" style="flex:1;" onclick="saveProduct()">ЗБЕРЕГТИ</button>
-                    <button type="button" class="btn-red" style="flex:1;" onclick="closeModal()">СКАСУВАТИ</button>
+                    <button type="button" class="btn-green" id="btnSaveProd" style="flex:1;" onclick="saveProduct()">ЗБЕРЕГТИ</button>
+                    <button type="button" class="btn-red" id="btnCancelProd" style="flex:1;" onclick="closeModal()">СКАСУВАТИ</button>
                 </div>
             </form>
         </div>
@@ -290,12 +288,10 @@
             } catch (err) { console.error(err); }
         }
 
-        // Побудова випадаючого списку з відсортованими за алфавітом продавцями
         function buildSellerDropdown(products) {
             let wrapper = document.getElementById('filterDropdownWrapper');
             let container = document.getElementById('sellerDropdownContent');
             
-            // Збираємо унікальні імена та сортуємо їх за алфавітом (українська абетка)
             let sellers = [...new Set(products.map(p => p.seller_name ? p.seller_name.trim() : "Не вказано"))].sort((a, b) => a.localeCompare(b, 'uk'));
             
             if (sellers.length <= 1) {
@@ -321,13 +317,11 @@
             container.innerHTML = html;
         }
 
-        // Відкрити/закрити випадаючий список
         function toggleSellerDropdown() {
             let content = document.getElementById('sellerDropdownContent');
             content.style.display = (content.style.display === 'block') ? 'none' : 'block';
         }
 
-        // Закривати випадаючий список при кліку за його межами
         window.addEventListener('click', function(e) {
             if (!e.target.closest('.dropdown-filter-container')) {
                 let content = document.getElementById('sellerDropdownContent');
@@ -415,6 +409,13 @@
             let price = document.getElementById('prodPrice').value;
             
             if(!title || !price) { alert("Назва та ціна обов'язкові!"); return; }
+
+            // Блокуємо кнопку, щоб користувач не натискав її 100 разів під час відправки на ImgBB
+            let btnSave = document.getElementById('btnSaveProd');
+            let btnCancel = document.getElementById('btnCancelProd');
+            btnSave.disabled = true;
+            btnCancel.disabled = true;
+            btnSave.innerText = "Зберігаємо...";
             
             let formData = new FormData();
             formData.append("title", title);
@@ -433,16 +434,17 @@
             formData.append("delivery_mode", "самовивіз"); formData.append("delivery_details", "");
             formData.append("existing_images", currentExistingImagesList.join(',')); 
             
+            // ВАЖЛИВЕ ВИПРАВЛЕННЯ: Додаємо файли ТІЛЬКИ якщо вони є! 
+            // Ніяких Blob([""]), які ламають FastAPI
             let fileInput = document.getElementById('prodImage');
             if(fileInput.files.length > 0) {
-                for(let i = 0; i < fileInput.files.length; i++) formData.append("files", fileInput.files[i]);
-            } else {
-                formData.append("files", new Blob([""]), "");
+                for(let i = 0; i < fileInput.files.length; i++) {
+                    formData.append("files", fileInput.files[i]);
+                }
             }
 
             let url = id ? `/api/products/update/${id}` : `/api/products/add`;
             try {
-                // ДОДАНО ПЕРЕДАЧУ JWT ТОКЕНА ДЛЯ ЗБЕРЕЖЕННЯ
                 let res = await fetch(url, { 
                     method: 'POST', 
                     headers: { 'Authorization': 'Bearer ' + user.token }, 
@@ -450,7 +452,7 @@
                 });
                 
                 if (res.ok) { 
-                    (id ? alert("Оновлено!") : alert("Додано!")); 
+                    (id ? alert("Товар успішно оновлено!") : alert("Товар успішно додано!")); 
                     closeModal(); 
                     loadProducts(); 
                 } else { 
@@ -458,12 +460,19 @@
                     let errorText = typeof err.detail === 'object' ? JSON.stringify(err.detail) : err.detail;
                     alert("Помилка: " + (errorText || "Недостатньо прав або помилка валідації.")); 
                 }
-            } catch(err) { console.error(err); }
+            } catch(err) { 
+                console.error(err); 
+                alert("Помилка підключення до сервера.");
+            } finally {
+                // Повертаємо кнопку в нормальний стан у будь-якому випадку
+                btnSave.disabled = false;
+                btnCancel.disabled = false;
+                btnSave.innerText = "ЗБЕРЕГТИ";
+            }
         }
 
         async function deleteProduct(id) {
             if(confirm("Точно видалити цей товар?")) {
-                // ДОДАНО ПЕРЕДАЧУ JWT ТОКЕНА ДЛЯ ВИДАЛЕННЯ
                 let res = await fetch(`/api/products/${id}?requester_id=${user.id}`, { 
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + user.token } 
