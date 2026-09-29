@@ -17,14 +17,11 @@ import jwt
 import base64
 
 # ================= НАЛАШТУВАННЯ ================= #
-# Твій API ключ від сервісу ImgBB для вічного зберігання картинок
-IMGBB_API_KEY = "0622c07513943192add7076ce8eb167e"
+IMGBB_API_KEY = "ВСТАВ_СВІЙ_КЛЮЧ_СЮДИ"
 
-# Створюємо необхідні папки для статичних файлів
 for folder in ["uploads", "goods_types", "sn_logos", "forses_logos"]:
     os.makedirs(folder, exist_ok=True)
 
-# Отримуємо URL бази: якщо є змінна в Render — береться хмарний Postgres, інакше — локальний SQLite
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./militaristica.db")
 
 if DATABASE_URL.startswith("postgres://"):
@@ -33,7 +30,7 @@ if DATABASE_URL.startswith("postgres://"):
 database = databases.Database(DATABASE_URL)
 metadata = sqlalchemy.MetaData()
 
-# --- КРИПТОГРАФІЯ (Хешування паролів та JWT) ---
+# --- КРИПТОГРАФІЯ ---
 SECRET_KEY = "militaristica_secret_ua_2026"
 ALGORITHM = "HS256"
 
@@ -50,12 +47,10 @@ def verify_password(stored_password: str, provided_password: str) -> bool:
     except Exception:
         return False
 
-# Генерація токена (діє 7 днів)
 def create_access_token(user_id: int):
     expire = datetime.utcnow() + timedelta(days=7)
     return jwt.encode({"sub": str(user_id), "exp": expire}, SECRET_KEY, algorithm=ALGORITHM)
 
-# Перевірка токена з заголовків
 def verify_token(request: Request):
     auth = request.headers.get("Authorization")
     if not auth or not auth.startswith("Bearer "):
@@ -67,9 +62,7 @@ def verify_token(request: Request):
     except Exception:
         raise HTTPException(status_code=401, detail="Токен недійсний або прострочений")
 
-# --- ФУНКЦІЯ ЗАВАНТАЖЕННЯ НА IMGBB ---
 async def upload_to_imgbb(file: UploadFile) -> str:
-    """Відправляє файл на ImgBB і повертає пряме посилання на картинку."""
     try:
         file_content = await file.read()
         base64_image = base64.b64encode(file_content).decode('utf-8')
@@ -212,6 +205,73 @@ async def admin_login(email: str = Form(...), admin_password: str = Form(...)):
         "access_token": access_token
     }
 
+# --- ЗМІНА ПАРОЛЯ З КАБІНЕТУ ---
+@app.post("/api/users/change-password")
+async def change_password(
+    old_password: str = Form(...),
+    new_password: str = Form(...),
+    current_user_id: int = Depends(verify_token)
+):
+    user = await database.fetch_one(users.select().where(users.c.id == current_user_id))
+    if not user: raise HTTPException(status_code=404, detail="Користувача не знайдено.")
+
+    user_dict = dict(user)
+    if not verify_password(user_dict["password"], old_password):
+        raise HTTPException(status_code=400, detail="Старий пароль введено невірно!")
+
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Новий пароль має бути не менше 6 символів!")
+
+    new_hash = hash_password(new_password)
+    await database.execute(users.update().where(users.c.id == current_user_id).values(password=new_hash))
+    return {"status": "success", "message": "Пароль успішно змінено!"}
+
+# --- ВІДНОВЛЕННЯ ЗАБУТОГО ПАРОЛЯ ---
+@app.post("/api/auth/forgot-password")
+async def forgot_password(email: str = Form(...)):
+    user = await database.fetch_one(users.select().where(users.c.email == email))
+    if not user:
+        return {"status": "success", "message": "Якщо такий email існує, інструкції відправлено."}
+
+    user_dict = dict(user)
+    reset_token = str(uuid.uuid4())
+    await database.execute(users.update().where(users.c.id == user_dict["id"]).values(verify_token=reset_token))
+
+    reset_link = f"https://militaristica.onrender.com/reset_password.html?token={reset_token}"
+    GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwFKRRRJQtpdXDpBGiilLEA1nd84wjXMAlaPNYI_aw3HD3oR7jDevm7O2fzgjBsVPjJxw/exec"
+
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; background: #1a1e18; color: #ffffff; padding: 20px; border-radius: 8px;">
+        <h2 style="color: #4CAF50;">Скидання пароля — Militaristica</h2>
+        <p>Привіт, {user_dict['name']}!</p>
+        <p>Ми отримали запит на відновлення пароля для вашого облікового запису.</p>
+        <br>
+        <a href="{reset_link}" style="background-color: #a33333; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Встановити новий пароль</a>
+        <br><br>
+        <p style="color: #888; font-size: 13px;">Якщо ви не робили цього запиту, просто проігноруйте цей лист.</p>
+    </div>
+    """
+    data = {"to": user_dict["email"], "subject": "Відновлення пароля на сайті Militaristica", "htmlContent": html_content}
+
+    try:
+        req = urllib.request.Request(GOOGLE_SCRIPT_URL, data=json.dumps(data).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+        urllib.request.urlopen(req)
+    except Exception as e:
+        print("Помилка відправки Email:", e)
+
+    return {"status": "success", "message": "Лист для відновлення надіслано на вашу пошту!"}
+
+@app.post("/api/auth/reset-password")
+async def reset_password(token: str = Form(...), new_password: str = Form(...)):
+    if not token or len(token) < 10: raise HTTPException(status_code=400, detail="Недійсний токен.")
+    user = await database.fetch_one(users.select().where(users.c.verify_token == token))
+    if not user: raise HTTPException(status_code=400, detail="Посилання недійсне або прострочене.")
+    if len(new_password) < 6: raise HTTPException(status_code=400, detail="Пароль має містити щонайменше 6 символів.")
+    
+    new_hash = hash_password(new_password)
+    await database.execute(users.update().where(users.c.id == user["id"]).values(password=new_hash, verify_token=""))
+    return {"status": "success", "message": "Пароль успішно змінено. Тепер ви можете увійти!"}
+
 @app.get("/api/users")
 async def get_all_users():
     all_users = await database.fetch_all(users.select().order_by(users.c.id.desc()))
@@ -228,9 +288,7 @@ async def update_my_profile(
     avatar_url: str = Form(""), telegram_chat_id: str = Form(""),
     current_user_id: int = Depends(verify_token)
 ):
-    if user_id != current_user_id:
-        raise HTTPException(status_code=403, detail="Доступ заборонено! Ви намагаєтесь змінити чужий профіль.")
-        
+    if user_id != current_user_id: raise HTTPException(status_code=403, detail="Доступ заборонено!")
     await database.execute(users.update().where(users.c.id == user_id).values(
         name=name, email=email, avatar_url=avatar_url, telegram_chat_id=telegram_chat_id
     ))
@@ -257,12 +315,7 @@ async def become_seller(user_id: int):
         <p>Слава Україні!</p>
     </div>
     """
-    
-    data = {
-        "to": user["email"],
-        "subject": "Підтвердження статусу продавця — Militaristica",
-        "htmlContent": html_content
-    }
+    data = {"to": user["email"], "subject": "Підтвердження статусу продавця — Militaristica", "htmlContent": html_content}
     
     try:
         req = urllib.request.Request(GOOGLE_SCRIPT_URL, data=json.dumps(data).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
@@ -291,8 +344,7 @@ async def add_product(
     description: str = Form(""), characteristics: str = Form("[]"), keywords: str = Form(""),
     owner_id: int = Form(0), phone: str = Form(""), city: str = Form(""), condition: str = Form("Нове"),
     seller_name: str = Form(""), delivery_mode: str = Form("самовивіз"), delivery_details: str = Form(""),
-    files: List[UploadFile] = File(default=[]),
-    current_user_id: int = Depends(verify_token)
+    files: List[UploadFile] = File(default=[]), current_user_id: int = Depends(verify_token)
 ):
     if owner_id != current_user_id: raise HTTPException(status_code=403, detail="Токен не збігається з ID власника.")
     user = await database.fetch_one(users.select().where(users.c.id == owner_id))
@@ -308,8 +360,7 @@ async def add_product(
     for f in files:
         if f.filename:
             url = await upload_to_imgbb(f)
-            if url:
-                saved_images.append(url)
+            if url: saved_images.append(url)
 
     await database.execute(products.insert().values(
         title=title, categories=",".join(selected_cats), price=price, stock=stock, sku=auto_sku,
@@ -337,8 +388,7 @@ async def update_product(
         for f in files:
             if f.filename:
                 url = await upload_to_imgbb(f)
-                if url:
-                    final_images.append(url)
+                if url: final_images.append(url)
 
     await database.execute(products.update().where(products.c.id == product_id).values(
         title=title, categories=",".join([c.strip() for c in categories.split(",") if c.strip()]),
@@ -420,11 +470,7 @@ async def create_order(
                 items_html = "".join([f"<li>[{p['sku']}] <b>{p['title']}</b> (x{p['qty']}) — {p['price'] * p['qty']} ₴</li>" for p in prods])
                 mail_html = f"<h3>Вітаємо, {seller_dict['name']}!</h3><p>У вас нове замовлення <b>№{order_id}</b>!</p><p><b>Покупець:</b> {customer_name}<br><b>Телефон:</b> {phone}<br><b>Доставка:</b> {delivery_info}</p><h4>Товари:</h4><ul>{items_html}</ul><p><b style='color:red;'>До оплати: {total_sum} ₴</b></p>"
                 
-                data = {
-                    "to": seller_dict["email"],
-                    "subject": f"Нове замовлення №{order_id}",
-                    "htmlContent": mail_html
-                }
+                data = {"to": seller_dict["email"], "subject": f"Нове замовлення №{order_id}", "htmlContent": mail_html}
                 req = urllib.request.Request(GOOGLE_SCRIPT_URL, data=json.dumps(data).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
                 urllib.request.urlopen(req)
             except Exception as e: 
@@ -433,9 +479,7 @@ async def create_order(
         if seller_dict.get("telegram_chat_id"):
             try:
                 items_text_tg = "\n".join([f"🔹 {p['title']} (x{p['qty']}) — {p['price'] * p['qty']} ₴" for p in prods])
-                tg_text = (f"🚨 *НОВЕ ЗАМОВЛЕННЯ №{order_id}* 🚨\n\n"
-                           f"👤 *Покупець:* {customer_name}\n📞 *Телефон:* {phone}\n📍 *Доставка:* {delivery_info}\n\n"
-                           f"📦 *Товари:*\n{items_text_tg}\n\n💰 *До оплати:* {total_sum} ₴")
+                tg_text = (f"🚨 *НОВЕ ЗАМОВЛЕННЯ №{order_id}* 🚨\n\n👤 *Покупець:* {customer_name}\n📞 *Телефон:* {phone}\n📍 *Доставка:* {delivery_info}\n\n📦 *Товари:*\n{items_text_tg}\n\n💰 *До оплати:* {total_sum} ₴")
                 url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
                 data = urllib.parse.urlencode({"chat_id": seller_dict["telegram_chat_id"], "text": tg_text, "parse_mode": "Markdown"}).encode('utf-8')
                 urllib.request.urlopen(urllib.request.Request(url, data=data))
@@ -490,8 +534,7 @@ async def upload_media(requester_id: int = Form(...), product_id: int = Form(0),
     for f in files:
         if f.filename:
             url = await upload_to_imgbb(f)
-            if url:
-                await database.execute(media.insert().values(file_url=url, media_type="photostrip", media_format="image", product_id=product_id))
+            if url: await database.execute(media.insert().values(file_url=url, media_type="photostrip", media_format="image", product_id=product_id))
     return {"status": "success"}
 
 @app.delete("/api/media/{media_id}")
@@ -542,12 +585,6 @@ async def serve_product_page_with_og(id: int = 0):
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:url" content="{canonical_url}" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="{title}" />
-    <meta name="twitter:description" content="{description}" />
-    <meta name="twitter:image" content="{full_image_url}" />
     """
 
     rendered_html = html_content.replace("<!-- OG_META_TAGS -->", og_tags)
