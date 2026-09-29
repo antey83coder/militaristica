@@ -179,6 +179,16 @@
                     </div>
                 </div>
 
+                <!-- НОВЕ ПОЛЕ: СТАН ТОВАРУ -->
+                <div class="form-group">
+                    <label>Стан товару:</label>
+                    <select id="prodCondition">
+                        <option value="Нове">Нове</option>
+                        <option value="Як нове">Як нове</option>
+                        <option value="БВ">БВ (Було у використанні)</option>
+                    </select>
+                </div>
+
                 <div class="form-group">
                     <label>Ключові слова (для пошуку, через кому):</label>
                     <input type="text" id="prodKeywords" placeholder="напр: шолом, каска, балістика">
@@ -390,6 +400,9 @@
                 document.getElementById('prodStock').value = p.stock;
                 document.getElementById('prodDesc').value = p.description;
                 document.getElementById('prodKeywords').value = p.keywords || '';
+                
+                // ВІДНОВЛЮЄМО СТАН ПРИ РЕДАГУВАННІ
+                document.getElementById('prodCondition').value = p.condition || "Нове";
 
                 currentExistingImagesList = (p.image_urls && p.image_urls.trim()) ? p.image_urls.split(',').map(s => s.trim()).filter(s => s) : [];
                 renderExistingPhotos();
@@ -410,7 +423,6 @@
             
             if(!title || !price) { alert("Назва та ціна обов'язкові!"); return; }
 
-            // Блокуємо кнопку, щоб користувач не натискав її 100 разів під час відправки на ImgBB
             let btnSave = document.getElementById('btnSaveProd');
             let btnCancel = document.getElementById('btnCancelProd');
             btnSave.disabled = true;
@@ -429,13 +441,14 @@
             formData.append("owner_id", user.id);
             formData.append("requester_id", user.id);
             
+            // ЗБЕРІГАЄМО ОБРАНИЙ СТАН ТОВАРУ
+            formData.append("condition", document.getElementById('prodCondition').value);
+            
             formData.append("phone", ""); formData.append("city", "");
-            formData.append("condition", "Нове"); formData.append("seller_name", user.name);
+            formData.append("seller_name", user.name);
             formData.append("delivery_mode", "самовивіз"); formData.append("delivery_details", "");
             formData.append("existing_images", currentExistingImagesList.join(',')); 
             
-            // ВАЖЛИВЕ ВИПРАВЛЕННЯ: Додаємо файли ТІЛЬКИ якщо вони є! 
-            // Ніяких Blob([""]), які ламають FastAPI
             let fileInput = document.getElementById('prodImage');
             if(fileInput.files.length > 0) {
                 for(let i = 0; i < fileInput.files.length; i++) {
@@ -464,7 +477,6 @@
                 console.error(err); 
                 alert("Помилка підключення до сервера.");
             } finally {
-                // Повертаємо кнопку в нормальний стан у будь-якому випадку
                 btnSave.disabled = false;
                 btnCancel.disabled = false;
                 btnSave.innerText = "ЗБЕРЕГТИ";
