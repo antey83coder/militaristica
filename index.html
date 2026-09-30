@@ -155,6 +155,34 @@
             .footer-full { flex-direction: column; justify-content: center; } 
             .footer-row { justify-content: center; }
         }
+
+        /* --- Стилі для мерехтливої кнопки Койот --- */
+        .btn-coyote-pulse {
+            background-color: #a88a65;
+            color: #121212 !important; /* Чорний текст для ідеального контрасту */
+            font-size: 22px; /* Збільшений розмір */
+            font-weight: 900; /* Максимальна жирність */
+            text-transform: uppercase;
+            padding: 15px 40px;
+            border-radius: 8px;
+            border: 2px solid #8c7252;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s;
+            /* Запуск анімації мерехтіння */
+            animation: pulseCoyote 2.5s infinite ease-in-out;
+        }
+
+        .btn-coyote-pulse:hover {
+            transform: scale(1.05); /* Легке збільшення при наведенні мишкою */
+        }
+
+        /* Сама анімація (зміна відтінку та тіні) */
+        @keyframes pulseCoyote {
+            0% { background-color: #a88a65; box-shadow: 0 0 10px rgba(168, 138, 101, 0.4); }
+            50% { background-color: #c2a37b; box-shadow: 0 0 25px rgba(194, 163, 123, 0.8); }
+            100% { background-color: #a88a65; box-shadow: 0 0 10px rgba(168, 138, 101, 0.4); }
+        }
     </style>
 </head>
 <body>
@@ -211,7 +239,7 @@
             Ми прагнемо створити місце, де воїни і звичайні люди можуть впевнено придбати усе необхідне для своїх задач.
         </div>
 
-        <a href="shop.html" class="btn-large-link">🛒 ПЕРЕЙТИ ДО МАГАЗИНУ</a>
+        <a href="shop.html" class="btn-coyote-pulse">ПЕРЕЙТИ ДО МАГАЗИНУ</a>
 
         <div class="info-block">
             <span style="font-size: 16px; font-weight: bold;">Умови доставки, оплати та повернення</span>
