@@ -150,20 +150,44 @@
                 </div>
 
                 <div class="details-box">
+                    <!-- МОНОБАНК -->
                     <div class="detail-row">
-                        <span class="detail-label">Номер картки (Монобанк)</span>
+                        <span class="detail-label">Номер картки / Банки (Монобанк)</span>
                         <div class="detail-value">
-                            <span id="cardNumber">4441 1144 2255 7788</span>
-                            <button class="btn-copy" onclick="copyText('cardNumber')">Копіювати</button>
+                            <span id="monoCardNumber">4441 1144 2255 7788</span>
+                            <button class="btn-copy" onclick="copyText('monoCardNumber')">Копіювати</button>
                         </div>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">IBAN (для переказів з усіх банків)</span>
+                        <span class="detail-label">IBAN (Монобанк)</span>
                         <div class="detail-value">
-                            <span id="ibanNumber">UA033220010000026204350323443</span>
-                            <button class="btn-copy" onclick="copyText('ibanNumber')">Копіювати</button>
+                            <span id="monoIbanNumber">UA033220010000026204350323443</span>
+                            <button class="btn-copy" onclick="copyText('monoIbanNumber')">Копіювати</button>
                         </div>
                     </div>
+
+                    <!-- РОЗДІЛЮВАЧ -->
+                    <hr style="border: 0; border-top: 1px solid #4a5444; margin: 15px 0;">
+
+                    <!-- ПРИВАТБАНК -->
+                    <div class="detail-row">
+                        <span class="detail-label">Номер картки / Конверта (ПриватБанк)</span>
+                        <div class="detail-value">
+                            <span id="privatCardNumber">5168 7500 0000 0000</span>
+                            <button class="btn-copy" onclick="copyText('privatCardNumber')">Копіювати</button>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">IBAN (ПриватБанк)</span>
+                        <div class="detail-value">
+                            <span id="privatIbanNumber">UA987654321098765432109876543</span>
+                            <button class="btn-copy" onclick="copyText('privatIbanNumber')">Копіювати</button>
+                        </div>
+                    </div>
+
+                    <!-- РОЗДІЛЮВАЧ -->
+                    <hr style="border: 0; border-top: 1px solid #4a5444; margin: 15px 0;">
+
                     <div class="detail-row">
                         <span class="detail-label">Призначення платежу</span>
                         <div class="detail-value" style="font-family: sans-serif; font-size: 14px;">Благодійний внесок</div>
