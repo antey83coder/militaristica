@@ -147,7 +147,6 @@
                 <div class="bank-card bank-mono">
                     <div class="bank-title">🐾 Монобанк</div>
                     <div class="qr-placeholder">
-                        <!-- Заміни посилання на свій реальний QR-код Монобанку -->
                         <img src="QR_MONO.jpeg" alt="QR Mono">
                     </div>
                     
@@ -163,19 +162,17 @@
                         <div class="req-label">IBAN:</div>
                         <div class="req-value">
                             <span id="monoIban" style="font-size: 13px;">UA033220010000026204350323443</span>
-                            <button type="button" class="btn-copy" onclick="copyText('UA123456789012345678901234567', this)">Копіювати</button>
+                            <button type="button" class="btn-copy" onclick="copyText('UA033220010000026204350323443', this)">Копіювати</button>
                         </div>
                     </div>
 
-                    <!-- Встав сюди посилання на свою Банку або Send.Monobank -->
-                    <a href="https://send.monobank.ua/" target="_blank" class="btn-pay-link btn-mono-link">Оплатити через Monobank</a>
+                    <a href="https://send.monobank.ua/jar/3K3sghb29v" target="_blank" class="btn-pay-link btn-mono-link">Оплатити через Monobank</a>
                 </div>
 
                 <!-- ПРИВАТБАНК -->
                 <div class="bank-card bank-privat">
                     <div class="bank-title">🟩 ПриватБанк</div>
                     <div class="qr-placeholder">
-                        <!-- Заміни посилання на свій реальний QR-код ПриватБанку -->
                         <img src="QR_Privat.jpeg" alt="QR Privat">
                     </div>
 
@@ -195,8 +192,7 @@
                         </div>
                     </div>
 
-                    <!-- Встав сюди посилання на оплату Приват (якщо є) -->
-                    <a href="https://next.privat24.ua/" target="_blank" class="btn-pay-link btn-privat-link">Оплатити через Приват24</a>
+                    <a href="https://next.privat24.ua/money-transfer/card?acc=5168750000000000" target="_blank" class="btn-pay-link btn-privat-link">Оплатити через Приват24</a>
                 </div>
             </div>
 
@@ -315,17 +311,14 @@
 
                 if (res.ok) {
                     let data = await res.json();
-                    let orderId = data.order_id; // Отримуємо номер створеного замовлення
+                    let orderId = data.order_id; 
 
-                    // Очищуємо кошик
                     localStorage.removeItem('militaristica_cart');
 
-                    // Підставляємо дані у модальне вікно
                     document.getElementById('payOrderId').innerText = orderId;
                     document.getElementById('payOrderIdAlert').innerText = orderId;
                     document.getElementById('payTotalAmount').innerText = orderTotalAmount + ' ₴';
 
-                    // Ховаємо форму, показуємо вікно оплати
                     document.getElementById('checkoutBox').style.display = 'none';
                     document.getElementById('cartContainer').innerHTML = '';
                     document.getElementById('paymentModal').style.display = 'flex';
@@ -343,7 +336,6 @@
             }
         }
 
-        // Функція для копіювання тексту
         function copyText(text, btnElement) {
             navigator.clipboard.writeText(text).then(() => {
                 let originalText = btnElement.innerText;
@@ -361,7 +353,6 @@
             });
         }
 
-        // Кнопка закриття після оплати
         function finishOrder() {
             window.location.href = 'shop.html';
         }
