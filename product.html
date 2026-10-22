@@ -21,7 +21,6 @@
 
         .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
         
-        /* Робимо макет адаптивним: на мобільних блоки стають один під одним */
         .product-layout { display: flex; flex-wrap: wrap; gap: 30px; background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 30px; }
         
         /* Галерея */
@@ -35,7 +34,6 @@
         .info-box { width: 50%; min-width: 280px; flex: 1; display: flex; flex-direction: column; }
         .sku-badge { color: #e06c75; font-size: 13px; font-weight: bold; margin-bottom: 8px; }
         
-        /* Виправлена назва: менший шрифт, перенесення слів, контрастний акцент */
         h1 { margin: 0 0 15px 0; font-size: 1.25rem; line-height: 1.4; font-weight: 700; color: #ffffff; word-break: break-word; }
         h1 span.accent { color: #a3e635; }
 
@@ -45,14 +43,15 @@
         .btn-cart { background: #98c379; color: #121212; border: none; padding: 14px 25px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 30px; transition: 0.2s; align-self: flex-start; }
         .btn-cart:hover { background: #7cb05a; }
 
-        /* Повний опис та характеристики на всю ширину під картою */
+        /* Нижня кнопка кошика на всю ширину для зручності */
+        .btn-cart-bottom { width: 100%; margin-top: 25px; margin-bottom: 0; text-align: center; }
+
         .full-width-section { width: 100%; margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
         h3 { border-bottom: 1px solid #333; padding-bottom: 8px; margin-top: 0; color: #fff; }
         
-        /* Стилі для розгортання опису */
         .desc-text { line-height: 1.6; color: #ccc; white-space: pre-wrap; margin-bottom: 15px; }
         .description-limited {
-            max-height: 220px; /* приблизно 10 рядків */
+            max-height: 220px;
             overflow: hidden;
             position: relative;
         }
@@ -152,7 +151,6 @@
                 } catch(e) {}
             }
 
-            // Робимо контрастне виділення перших кількох слів у назві
             let titleWords = p.title ? p.title.split(' ') : [];
             let formattedTitle = p.title;
             if (titleWords.length > 2) {
@@ -179,10 +177,10 @@
                     <div class="desc-text" id="descContainer">${p.description}</div>
                     <button id="readMoreBtn" class="read-more-btn" style="display:none;" onclick="toggleDescription()">Читати далі</button>
                     ${charsHtml}
+                    <button class="btn-cart btn-cart-bottom" onclick="addToCart()">ДОДАТИ В КОШИК</button>
                 </div>
             `;
 
-            // Перевіряємо довжину опису для активації кнопки "Читати далі"
             setTimeout(checkDescriptionHeight, 50);
         }
 
