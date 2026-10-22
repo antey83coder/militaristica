@@ -20,32 +20,74 @@
         .btn-red:hover { background-color: #c9515b; }
 
         .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
-        .product-layout { display: flex; gap: 40px; background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 30px; }
+        
+        /* Робимо макет адаптивним: на мобільних блоки стають один під одним */
+        .product-layout { display: flex; flex-wrap: wrap; gap: 30px; background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 30px; }
         
         /* Галерея */
-        .gallery-box { width: 45%; }
-        .main-img { width: 100%; height: 350px; object-fit: contain; background: #282c34; border-radius: 6px; margin-bottom: 15px; }
+        .gallery-box { width: 45%; min-width: 280px; flex: 1; }
+        .main-img { width: 100%; height: auto; max-height: 400px; object-fit: contain; background: #282c34; border-radius: 6px; margin-bottom: 15px; display: block; }
         .thumbs { display: flex; gap: 10px; flex-wrap: wrap; }
         .thumb-img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 2px solid transparent; }
         .thumb-img.active { border-color: #e06c75; }
 
         /* Інформація */
-        .info-box { width: 55%; display: flex; flex-direction: column; }
+        .info-box { width: 50%; min-width: 280px; flex: 1; display: flex; flex-direction: column; }
         .sku-badge { color: #e06c75; font-size: 13px; font-weight: bold; margin-bottom: 8px; }
-        h1 { margin: 0 0 15px 0; font-size: 24px; color: #fff; }
+        
+        /* Виправлена назва: менший шрифт, перенесення слів, контрастний акцент */
+        h1 { margin: 0 0 15px 0; font-size: 1.25rem; line-height: 1.4; font-weight: 700; color: #ffffff; word-break: break-word; }
+        h1 span.accent { color: #a3e635; }
+
         .price-tag { font-size: 28px; font-weight: bold; color: #98c379; margin-bottom: 20px; }
         .stock-tag { font-size: 14px; color: #aaa; margin-bottom: 25px; }
         
-        .btn-cart { background: #98c379; color: #121212; border: none; padding: 14px 25px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 30px; transition: 0.2s; }
+        .btn-cart { background: #98c379; color: #121212; border: none; padding: 14px 25px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 30px; transition: 0.2s; align-self: flex-start; }
         .btn-cart:hover { background: #7cb05a; }
 
-        /* Характеристики та опис */
-        h3 { border-bottom: 1px solid #333; padding-bottom: 8px; margin-top: 20px; color: #fff; }
-        .desc-text { line-height: 1.6; color: #ccc; white-space: pre-wrap; margin-bottom: 20px; }
+        /* Повний опис та характеристики на всю ширину під картою */
+        .full-width-section { width: 100%; margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
+        h3 { border-bottom: 1px solid #333; padding-bottom: 8px; margin-top: 0; color: #fff; }
+        
+        /* Стилі для розгортання опису */
+        .desc-text { line-height: 1.6; color: #ccc; white-space: pre-wrap; margin-bottom: 15px; }
+        .description-limited {
+            max-height: 220px; /* приблизно 10 рядків */
+            overflow: hidden;
+            position: relative;
+        }
+        .description-limited::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(transparent, #1e1e1e);
+        }
+        .read-more-btn {
+            background: transparent;
+            border: 1px solid #a3e635;
+            color: #a3e635;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .read-more-btn:hover {
+            background: rgba(163, 230, 53, 0.1);
+        }
+
         table.chars-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         table.chars-table td { padding: 8px 12px; border-bottom: 1px solid #282c34; font-size: 14px; }
         table.chars-table td:first-child { color: #888; width: 40%; }
         table.chars-table td:last-child { color: #fff; }
+
+        @media(max-width: 768px) {
+            .product-layout { flex-direction: column; padding: 15px; }
+            .gallery-box, .info-box { width: 100%; }
+        }
     </style>
     <!-- OG_META_TAGS -->
 </head>
@@ -70,7 +112,6 @@
         let currentProduct = null;
 
         async function loadProductDetails() {
-            // Отримуємо ?id=... з адреси сторінки
             let params = new URLSearchParams(window.location.search);
             let prodId = params.get('id');
 
@@ -92,13 +133,11 @@
         function renderProduct(p) {
             let images = (p.image_urls && p.image_urls.length > 0) ? p.image_urls.split(',') : ['logo.jpg'];
             
-            // Формуємо мініатюри галереї
             let thumbsHtml = '';
             images.forEach((img, idx) => {
                 thumbsHtml += `<img src="${img.trim()}" class="thumb-img ${idx===0?'active':''}" onclick="selectImage('${img.trim()}', this)">`;
             });
 
-            // Формуємо таблицю характеристик
             let charsHtml = '';
             if (p.characteristics && p.characteristics !== "[]") {
                 try {
@@ -113,6 +152,15 @@
                 } catch(e) {}
             }
 
+            // Робимо контрастне виділення перших кількох слів у назві
+            let titleWords = p.title ? p.title.split(' ') : [];
+            let formattedTitle = p.title;
+            if (titleWords.length > 2) {
+                let accentPart = titleWords.slice(0, 2).join(' ');
+                let restPart = titleWords.slice(2).join(' ');
+                formattedTitle = `<span class="accent">${accentPart}</span> ${restPart}`;
+            }
+
             document.getElementById('productContent').innerHTML = `
                 <div class="gallery-box">
                     <img src="${images[0].trim()}" id="mainViewImg" class="main-img">
@@ -120,18 +168,45 @@
                 </div>
                 <div class="info-box">
                     <div class="sku-badge">${p.sku}</div>
-                    <h1>${p.title}</h1>
+                    <h1>${formattedTitle}</h1>
                     <div class="price-tag">${p.price} ₴</div>
                     <div class="stock-tag">В наявності: ${p.stock} шт</div>
-                    
                     <button class="btn-cart" onclick="addToCart()">ДОДАТИ В КОШИК</button>
-                    
-                    <h3>Опис товару</h3>
-                    <div class="desc-text">${p.description}</div>
+                </div>
 
+                <div class="full-width-section">
+                    <h3>Опис товару</h3>
+                    <div class="desc-text" id="descContainer">${p.description}</div>
+                    <button id="readMoreBtn" class="read-more-btn" style="display:none;" onclick="toggleDescription()">Читати далі</button>
                     ${charsHtml}
                 </div>
             `;
+
+            // Перевіряємо довжину опису для активації кнопки "Читати далі"
+            setTimeout(checkDescriptionHeight, 50);
+        }
+
+        function checkDescriptionHeight() {
+            const desc = document.getElementById('descContainer');
+            const btn = document.getElementById('readMoreBtn');
+            if (desc && btn) {
+                if (desc.scrollHeight > 200) {
+                    desc.classList.add('description-limited');
+                    btn.style.display = 'inline-block';
+                }
+            }
+        }
+
+        function toggleDescription() {
+            const desc = document.getElementById('descContainer');
+            const btn = document.getElementById('readMoreBtn');
+            if (desc.classList.contains('description-limited')) {
+                desc.classList.remove('description-limited');
+                btn.innerText = 'Згорнути';
+            } else {
+                desc.classList.add('description-limited');
+                btn.innerText = 'Читати далі';
+            }
         }
 
         function selectImage(url, el) {
