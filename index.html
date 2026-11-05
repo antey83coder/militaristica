@@ -60,6 +60,17 @@
         .main-container { width: 100%; padding: 25px 2%; box-sizing: border-box; display: flex; flex-direction: column; gap: 25px; flex-grow: 1; }
         .banner-text { background-color: #242922; border-left: 4px solid #a33333; padding: 20px 25px; font-size: 16px; line-height: 1.6; border-radius: 0 8px 8px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
 
+        /* ВІДЖЕТ ПРОГНОЗУ ВІЙНИ */
+        .forecast-box { background-color: #1f241d; border: 1px solid #4a5444; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 15px; width: 100%; box-sizing: border-box; }
+        .forecast-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #3b4238; padding-bottom: 12px; }
+        .forecast-title { font-size: 18px; font-weight: bold; color: #ffffff; margin: 0; }
+        .forecast-subtitle { font-size: 13px; color: #aaaaaa; margin: 3px 0 0 0; }
+        .forecast-date-badge { background: #2b3028; border: 1px solid #4a5444; padding: 5px 12px; border-radius: 4px; font-size: 12px; color: #dddddd; white-space: nowrap; }
+        .forecast-table { width: 100%; text-align: left; border-collapse: collapse; font-size: 14px; }
+        .forecast-table th { color: #888888; border-bottom: 1px solid #3b4238; font-size: 12px; text-transform: uppercase; padding: 10px; font-weight: bold; }
+        .forecast-table td { padding: 12px 10px; border-bottom: 1px solid #2b3028; color: #dddddd; }
+        .forecast-table tr:hover { background-color: #2b3028/40; }
+
         /* КАТЕГОРІЇ */
         .categories-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; width: 100%; } 
         .category-card { background-color: #1f241d; border: 1px solid #4a5444; border-radius: 8px; padding: 20px 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-decoration: none; color: #ffffff; transition: 0.2s; aspect-ratio: 1 / 1.1; box-sizing: border-box; }
@@ -67,9 +78,6 @@
         .category-img { height: 60%; width: 100%; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
         .category-img img { max-height: 100%; max-width: 100%; object-fit: contain; } 
         .category-card span { font-size: 14px; font-weight: bold; text-align: center; line-height: 1.3; }
-
-        .btn-large-link { display: block; width: 100%; background: #1f241d; border: 1px solid #4a5444; color: white; text-align: center; padding: 20px; font-size: 20px; font-weight: 900; text-decoration: none; border-radius: 8px; transition: 0.2s; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .btn-large-link:hover { background: #2b3028; border-color: #a33333; }
 
         .info-block { display: flex; justify-content: space-between; align-items: center; background: #1f241d; padding: 20px; border-radius: 8px; border: 1px solid #4a5444; width: 100%; box-sizing: border-box; flex-wrap: wrap; gap: 15px; }
         .support-text { background: #1f241d; padding: 25px; border-radius: 8px; border: 1px solid #4a5444; width: 100%; box-sizing: border-box; line-height: 1.6; color: #cccccc; font-size: 15px; }
@@ -159,9 +167,9 @@
         /* --- Стилі для мерехтливої кнопки Койот --- */
         .btn-coyote-pulse {
             background-color: #a88a65;
-            color: #121212 !important; /* Чорний текст для ідеального контрасту */
-            font-size: 22px; /* Збільшений розмір */
-            font-weight: 900; /* Максимальна жирність */
+            color: #121212 !important;
+            font-size: 22px;
+            font-weight: 900;
             text-transform: uppercase;
             padding: 15px 40px;
             border-radius: 8px;
@@ -169,15 +177,13 @@
             text-decoration: none;
             display: inline-block;
             transition: transform 0.2s;
-            /* Запуск анімації мерехтіння */
             animation: pulseCoyote 2.5s infinite ease-in-out;
         }
 
         .btn-coyote-pulse:hover {
-            transform: scale(1.05); /* Легке збільшення при наведенні мишкою */
+            transform: scale(1.05);
         }
 
-        /* Сама анімація (зміна відтінку та тіні) */
         @keyframes pulseCoyote {
             0% { background-color: #a88a65; box-shadow: 0 0 10px rgba(168, 138, 101, 0.4); }
             50% { background-color: #c2a37b; box-shadow: 0 0 25px rgba(194, 163, 123, 0.8); }
@@ -231,6 +237,55 @@
     <main class="main-container">
         <div class="banner-text">
             <b>Militaristica</b> — це площадка для сильних і впевнених людей! У нас ви знайдете товари для мілітарної справи, спорту, туризму, активного відпочинку, роботи тощо.
+        </div>
+
+        <!-- БЛОК АНАЛІТИЧНОГО ПРОГНОЗУ (ВІН ТЕПЕР РІВНЕНЬКО В СІТЦІ САЙТУ) -->
+        <div class="forecast-box">
+            <div class="forecast-header">
+                <div>
+                    <h3 class="forecast-title">📊 Прогноз завершення війни</h3>
+                    <p class="forecast-subtitle">Скорингова модель на основі відкритих даних (ISW, економіка, санкції)</p>
+                </div>
+                <span id="forecast-date" class="forecast-date-badge">Оновлення даних...</span>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="forecast-table">
+                    <thead>
+                        <tr>
+                            <th>Сценарій умов</th>
+                            <th style="text-align: center;">Поточний рік</th>
+                            <th style="text-align: center;">Наступний рік</th>
+                            <th style="text-align: center;">Через рік</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: 500;">На умовах РФ (4 області + Крим)</td>
+                            <td style="text-align: center; font-weight: bold; color: #e06c75;" id="russia-max-2026">--%</td>
+                            <td style="text-align: center; color: #e06c75;" id="russia-max-2027">--%</td>
+                            <td style="text-align: center; color: #e06c75;" id="russia-max-2028">--%</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 500;">На умовах РФ (Донбас + Крим)</td>
+                            <td style="text-align: center; font-weight: bold; color: #d19a66;" id="russia-part-2026">--%</td>
+                            <td style="text-align: center; color: #d19a66;" id="russia-part-2027">--%</td>
+                            <td style="text-align: center; color: #d19a66;" id="russia-part-2028">--%</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 500;">Заморожування по лінії зіткнення</td>
+                            <td style="text-align: center; font-weight: bold; color: #e5c07b;" id="frozen-2026">--%</td>
+                            <td style="text-align: center; color: #e5c07b;" id="frozen-2027">--%</td>
+                            <td style="text-align: center; color: #abb2bf;" id="frozen-2028">--%</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 500;">Відновлення кордонів 1991 року</td>
+                            <td style="text-align: center; font-weight: bold; color: #98c379;" id="borders-2026">--%</td>
+                            <td style="text-align: center; font-weight: bold; color: #98c379;" id="borders-2027">--%</td>
+                            <td style="text-align: center; font-weight: bold; color: #98c379;" id="borders-2028">--%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="categories-grid" id="mainCategories"></div>
@@ -331,16 +386,6 @@
         <img id="lightboxImg" style="max-width:90%; max-height:90%; border-radius:8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); object-fit: contain;">
     </div>
 
-    <script>
-        function openLightbox(imgSrc) {
-            document.getElementById('lightboxImg').src = imgSrc;
-            document.getElementById('imageLightbox').style.display = 'flex';
-        }
-        function closeLightbox() {
-            document.getElementById('imageLightbox').style.display = 'none';
-        }
-    </script>
-
     <!-- СКРИПТИ -->
     <script>
         // 1. ДНІ ВІЙНИ
@@ -348,7 +393,40 @@
         const diffTime = Math.abs(new Date() - startWar);
         document.getElementById("warDays").innerText = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        // 2. КАТЕГОРІЇ
+        // 2. АВТОМАТИЧНЕ ЗАВАНТАЖЕННЯ ДАНИХ ПРОГНОЗУ ІЗ JSON
+        async function loadWarForecast() {
+            try {
+                const response = await fetch('war_forecast_data.json');
+                if (!response.ok) throw new Error('Не вдалося завантажити файл даних');
+                
+                const data = await response.json();
+                const f = data.forecasts;
+
+                // Заповнення комірок значеннями з JSON
+                document.getElementById('russia-max-2026').innerText = f['2026'].russia_max + '%';
+                document.getElementById('russia-part-2026').innerText = f['2026'].russia_partial + '%';
+                document.getElementById('frozen-2026').innerText = f['2026'].frozen + '%';
+                document.getElementById('borders-2026').innerText = f['2026'].borders_1991 + '%';
+
+                document.getElementById('russia-max-2027').innerText = f['2027'].russia_max + '%';
+                document.getElementById('russia-part-2027').innerText = f['2027'].russia_partial + '%';
+                document.getElementById('frozen-2027').innerText = f['2027'].frozen + '%';
+                document.getElementById('borders-2027').innerText = f['2027'].borders_1991 + '%';
+
+                document.getElementById('russia-max-2028').innerText = f['2028'].russia_max + '%';
+                document.getElementById('russia-part-2028').innerText = f['2028'].russia_partial + '%';
+                document.getElementById('frozen-2028').innerText = f['2028'].frozen + '%';
+                document.getElementById('borders-2028').innerText = f['2028'].borders_1991 + '%';
+
+                document.getElementById('forecast-date').innerText = 'Оновлено: ' + data.updated_at;
+            } catch (e) {
+                console.error("Помилка завантаження прогнозу:", e);
+                document.getElementById('forecast-date').innerText = 'Дані тимчасово недоступні';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', loadWarForecast);
+
+        // 3. КАТЕГОРІЇ
         const categoryMap = {
             "mil_goods": { name: "Військова справа і екіпірування", img: "goods_types/mil_goods.jpg" },
             "sport_goods": { name: "Спорт і здоров'я", img: "goods_types/sport_goods.jpg" },
@@ -362,6 +440,7 @@
 
         function renderMainCategories() {
             let container = document.getElementById('mainCategories');
+            if(!container) return;
             container.innerHTML = ''; 
             for (const [key, data] of Object.entries(categoryMap)) {
                 container.innerHTML += `
@@ -372,6 +451,7 @@
                 `;
             }
         }
+        document.addEventListener('DOMContentLoaded', renderMainCategories);
 
         // 4. МЕНЮ
         function toggleMenu() {
@@ -420,6 +500,7 @@
 
         function renderComments() {
             let list = document.getElementById('commentsList');
+            if(!list) return;
             list.innerHTML = '';
             putinComments.forEach(c => {
                 list.innerHTML += `
@@ -445,54 +526,32 @@
                     track.parentElement.style.display = 'none';
                     return;
                 }
-                track.parentElement.style.display = 'block';
 
-                let fullList = [...mediaItems, ...mediaItems];
-
-                fullList.forEach(item => {
+                mediaItems.forEach(item => {
                     let img = document.createElement('img');
-                    img.src = item.file_url;
-                    img.alt = "Militaristica Media";
-                    
-                    if (item.product_id && parseInt(item.product_id) > 0) {
-                        img.style.cursor = 'pointer';
-                        img.title = 'Перейти до товару';
-                        img.onclick = () => {
-                            window.location.href = `product.html?id=${item.product_id}`;
-                        };
-                    } else {
-                        img.onclick = () => {
-                            openLightbox(item.file_url);
-                        };
-                    }
-
+                    img.src = item.url;
+                    img.onclick = () => openLightbox(item.url);
                     track.appendChild(img);
                 });
-            } catch (err) {
-                console.error("Помилка завантаження фотострічки:", err);
+                // Дублюємо для безшовного циклу
+                mediaItems.forEach(item => {
+                    let img = document.createElement('img');
+                    img.src = item.url;
+                    img.onclick = () => openLightbox(item.url);
+                    track.appendChild(img);
+                });
+            } catch (e) {
+                console.log("Фотострічка не завантажена (офлайн режим)");
             }
         }
+        document.addEventListener('DOMContentLoaded', loadPhotostrip);
 
-        document.addEventListener("DOMContentLoaded", () => {
-            renderMainCategories(); 
-            loadPhotostrip(); 
-            
-            let user = JSON.parse(localStorage.getItem('militaristica_user'));
-            if (user && document.getElementById('headerUserZone')) {
-                let av = user.avatar_url ? `<img src="${user.avatar_url}" class="user-avatar">` : `<div class="user-avatar">${user.name.charAt(0)}</div>`;
-                document.getElementById('headerUserZone').innerHTML = `
-                    <a href="profile.html" class="user-pill">
-                        ${av}<span>${user.name}</span>
-                    </a>
-                `;
-            }
-        });
-
-        function togglePasswordVisibility(inputId) {
-            const input = document.getElementById(inputId);
-            if (input) {
-                input.type = input.type === 'password' ? 'text' : 'password';
-            }
+        function openLightbox(imgSrc) {
+            document.getElementById('lightboxImg').src = imgSrc;
+            document.getElementById('imageLightbox').style.display = 'flex';
+        }
+        function closeLightbox() {
+            document.getElementById('imageLightbox').style.display = 'none';
         }
     </script>
 </body>
