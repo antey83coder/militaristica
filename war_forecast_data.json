@@ -1,24 +1,24 @@
 {
-    "updated_at": "2026-11-05 19:49:33 UTC",
-    "metrics_source": "Strict Attrition & Realpolitik Model",
+    "updated_at": "2026-11-05 20:00:58 UTC",
+    "metrics_source": "Time-Horizon Attrition Model",
     "forecasts": {
         "2026": {
-            "russia_max": 10,
-            "russia_partial": 25,
-            "frozen": 50,
-            "borders_1991": 15
+            "russia_max": 2,
+            "russia_partial": 15,
+            "frozen": 75,
+            "borders_1991": 8
         },
         "2027": {
-            "russia_max": 12,
+            "russia_max": 10,
             "russia_partial": 28,
-            "frozen": 45,
+            "frozen": 47,
             "borders_1991": 15
         },
         "2028": {
             "russia_max": 15,
-            "russia_partial": 30,
-            "frozen": 40,
-            "borders_1991": 15
+            "russia_partial": 32,
+            "frozen": 35,
+            "borders_1991": 18
         }
     }
 }
