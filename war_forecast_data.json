@@ -1,24 +1,24 @@
 {
-    "updated_at": "2026-11-05 17:43:34 UTC",
-    "metrics_source": "ISW RSS + Economic Indicators Model",
+    "updated_at": "2026-11-05 19:49:33 UTC",
+    "metrics_source": "Strict Attrition & Realpolitik Model",
     "forecasts": {
         "2026": {
-            "russia_max": 3,
-            "russia_partial": 5,
-            "frozen": 45,
-            "borders_1991": 47
+            "russia_max": 10,
+            "russia_partial": 25,
+            "frozen": 50,
+            "borders_1991": 15
         },
         "2027": {
-            "russia_max": 5,
-            "russia_partial": 10,
-            "frozen": 35,
-            "borders_1991": 50
+            "russia_max": 12,
+            "russia_partial": 28,
+            "frozen": 45,
+            "borders_1991": 15
         },
         "2028": {
-            "russia_max": 8,
-            "russia_partial": 12,
-            "frozen": 20,
-            "borders_1991": 60
+            "russia_max": 15,
+            "russia_partial": 30,
+            "frozen": 40,
+            "borders_1991": 15
         }
     }
 }
