@@ -397,7 +397,7 @@
         const diffTime = Math.abs(new Date() - startWar);
         document.getElementById("warDays").innerText = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        // 2. АВТОМАТИЧНЕ ЗАВАНТАЖЕННЯ ДАНИХ ПРОГНОЗУ ІЗ JSON
+        // 2. АВТОМАТИЧНЕ ЗАВАНТАЖЕННЯ ДАНИХ ПРОГНОЗУ ІЗ JSON (З двома знаками після коми)
         async function loadWarForecast() {
             try {
                 const response = await fetch('war_forecast_data.json');
@@ -406,21 +406,24 @@
                 const data = await response.json();
                 const f = data.forecasts;
 
-                // Заповнення комірок значеннями з JSON
-                document.getElementById('russia-max-2026').innerText = f['2026'].russia_max + '%';
-                document.getElementById('russia-part-2026').innerText = f['2026'].russia_partial + '%';
-                document.getElementById('frozen-2026').innerText = f['2026'].frozen + '%';
-                document.getElementById('borders-2026').innerText = f['2026'].borders_1991 + '%';
+                // Функція форматування до 2 знаків після коми
+                const fmt = (val) => val.toFixed(2) + '%';
 
-                document.getElementById('russia-max-2027').innerText = f['2027'].russia_max + '%';
-                document.getElementById('russia-part-2027').innerText = f['2027'].russia_partial + '%';
-                document.getElementById('frozen-2027').innerText = f['2027'].frozen + '%';
-                document.getElementById('borders-2027').innerText = f['2027'].borders_1991 + '%';
+                // Заповнення комірок значеннями з JSON з двома знаками після коми
+                document.getElementById('russia-max-2026').innerText = fmt(f['2026'].russia_max);
+                document.getElementById('russia-part-2026').innerText = fmt(f['2026'].russia_partial);
+                document.getElementById('frozen-2026').innerText = fmt(f['2026'].frozen);
+                document.getElementById('borders-2026').innerText = fmt(f['2026'].borders_1991);
 
-                document.getElementById('russia-max-2028').innerText = f['2028'].russia_max + '%';
-                document.getElementById('russia-part-2028').innerText = f['2028'].russia_partial + '%';
-                document.getElementById('frozen-2028').innerText = f['2028'].frozen + '%';
-                document.getElementById('borders-2028').innerText = f['2028'].borders_1991 + '%';
+                document.getElementById('russia-max-2027').innerText = fmt(f['2027'].russia_max);
+                document.getElementById('russia-part-2027').innerText = fmt(f['2027'].russia_partial);
+                document.getElementById('frozen-2027').innerText = fmt(f['2027'].frozen);
+                document.getElementById('borders-2027').innerText = fmt(f['2027'].borders_1991);
+
+                document.getElementById('russia-max-2028').innerText = fmt(f['2028'].russia_max);
+                document.getElementById('russia-part-2028').innerText = fmt(f['2028'].russia_partial);
+                document.getElementById('frozen-2028').innerText = fmt(f['2028'].frozen);
+                document.getElementById('borders-2028').innerText = fmt(f['2028'].borders_1991);
 
                 document.getElementById('forecast-date').innerText = 'Оновлено: ' + data.updated_at;
             } catch (e) {

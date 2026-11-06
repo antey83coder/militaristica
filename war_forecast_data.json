@@ -1,24 +1,24 @@
 {
-    "updated_at": "2026-11-05 20:21:02 UTC",
-    "metrics_source": "Balanced Attrition & Horizon Model",
+    "updated_at": "2026-11-06 17:34:54 UTC",
+    "metrics_source": "Independent Time-Horizon Attrition Model",
     "forecasts": {
         "2026": {
-            "russia_max": 3,
-            "russia_partial": 17,
-            "frozen": 70,
-            "borders_1991": 10
+            "russia_max": 1.25,
+            "russia_partial": 6.8,
+            "frozen": 89.5,
+            "borders_1991": 2.1
         },
         "2027": {
-            "russia_max": 8,
-            "russia_partial": 25,
-            "frozen": 52,
-            "borders_1991": 15
+            "russia_max": 9.45,
+            "russia_partial": 24.3,
+            "frozen": 62.15,
+            "borders_1991": 14.8
         },
         "2028": {
-            "russia_max": 12,
-            "russia_partial": 30,
-            "frozen": 40,
-            "borders_1991": 18
+            "russia_max": 13.2,
+            "russia_partial": 29.5,
+            "frozen": 48.75,
+            "borders_1991": 21.4
         }
     }
 }
