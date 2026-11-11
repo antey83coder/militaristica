@@ -608,26 +608,31 @@ async def create_monobank_invoice(order_id: int):
         "ccy": 980,
         "merchantPaymInfo": {
             "reference": str(order_id),
-            "destination": f"Order #{order_id} payment on Militaristica"  # <--- Змінено на латиницю
+            "destination": f"Order #{order_id} payment on Militaristica"
         },
         "webHookUrl": "https://militaristica.onrender.com/api/webhook/monobank"
     }
     
+    # Гарантуємо, що токен і заголовки складаються лише з ASCII-символів
+    safe_token = MONO_TOKEN.strip().encode("ascii", "ignore").decode("ascii")
+    
     headers = {
-        "X-Token": MONO_TOKEN,
-        "Content-Type": "application/json"
+        "X-Token": safe_token,
+        "Content-Type": "application/json; charset=utf-8"
     }
+    
+    json_data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     
     req = urllib.request.Request(
         "https://api.monobank.ua/api/merchant/invoice/create",
-        data=json.dumps(payload).encode("utf-8"),
+        data=json_data,
         headers=headers,
         method="POST"
     )
     
     try:
         loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(None, urllib.request.urlopen, req)
+        response = await loop.run_in_executor(None, lambda: urllib.request.urlopen(req))
         res_data = json.loads(response.read().decode("utf-8"))
         return {"status": "success", "invoiceId": res_data.get("invoiceId"), "pageUrl": res_data.get("pageUrl")}
     except Exception as e:
