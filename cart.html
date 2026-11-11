@@ -52,43 +52,24 @@
 
         /* ================= МОДАЛЬНЕ ВІКНО ОПЛАТИ ================= */
         .payment-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 2000; padding: 15px; box-sizing: border-box; overflow-y: auto; }
-        .payment-content { background: #1e1e1e; border: 2px solid #98c379; border-radius: 12px; padding: 25px; max-width: 700px; width: 100%; position: relative; margin: auto; }
-        .payment-header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 15px; }
-        .payment-header h2 { color: #98c379; margin: 0 0 10px 0; font-size: 26px; }
-        .payment-header p { color: #aaa; margin: 0; font-size: 15px; line-height: 1.5; }
-        .payment-alert { background: rgba(224, 108, 117, 0.1); border-left: 4px solid #e06c75; padding: 10px 15px; color: #e06c75; font-weight: bold; margin-bottom: 20px; font-size: 14px; }
+        .payment-content { background: #1e1e1e; border: 2px solid #98c379; border-radius: 12px; padding: 30px; max-width: 500px; width: 100%; position: relative; margin: auto; text-align: center; }
+        .payment-header { margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .payment-header h2 { color: #98c379; margin: 0 0 10px 0; font-size: 24px; }
+        .payment-header p { color: #aaa; margin: 0; font-size: 15px; }
+        .payment-alert { background: rgba(152, 195, 121, 0.1); border-left: 4px solid #98c379; padding: 12px 15px; color: #ddd; font-size: 14px; margin-bottom: 25px; text-align: left; line-height: 1.5; }
         
-        .banks-grid { display: flex; gap: 20px; flex-wrap: wrap; }
-        .bank-card { flex: 1; min-width: 280px; border-radius: 8px; padding: 20px; box-sizing: border-box; text-align: center; border: 1px solid #444; }
-        .bank-mono { background: linear-gradient(135deg, #111 0%, #222 100%); }
-        .bank-privat { background: linear-gradient(135deg, #1e3c23 0%, #2b5c33 100%); }
-        
-        .bank-title { font-size: 18px; font-weight: 900; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .qr-placeholder { width: 150px; height: 150px; background: #fff; margin: 0 auto 15px auto; border-radius: 8px; padding: 5px; display: flex; align-items: center; justify-content: center; }
-        .qr-placeholder img { max-width: 100%; max-height: 100%; border-radius: 4px; }
-        
-        .req-row { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; margin-bottom: 10px; text-align: left; }
-        .req-label { font-size: 12px; color: #aaa; margin-bottom: 3px; }
-        .req-value { font-family: monospace; font-size: 16px; color: #fff; display: flex; justify-content: space-between; align-items: center; }
-        
-        .btn-copy { background: #4a5444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; transition: 0.2s; }
-        .btn-copy:hover { background: #98c379; color: #121212; }
-        
-        .btn-pay-link { display: inline-block; width: 100%; padding: 12px; border-radius: 6px; font-weight: bold; text-decoration: none; color: white; margin-top: 10px; transition: 0.2s; box-sizing: border-box; }
+        .btn-pay-link { display: inline-block; width: 100%; padding: 15px; border-radius: 6px; font-weight: 900; font-size: 16px; text-decoration: none; color: white; margin-bottom: 15px; transition: 0.2s; box-sizing: border-box; text-transform: uppercase; cursor: pointer; border: none; }
         .btn-mono-link { background: #ff4747; border: 1px solid #cc3a3a; }
         .btn-mono-link:hover { background: #e63e3e; }
-        .btn-privat-link { background: #7cb05a; border: 1px solid #638c48; }
-        .btn-privat-link:hover { background: #68944b; }
         
-        .btn-close-modal { background: transparent; border: 1px solid #888; color: #aaa; padding: 12px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 25px; width: 100%; }
-        .btn-close-modal:hover { background: #333; color: #fff; border-color: #fff; }
+        .btn-close-modal { background: #2b3028; border: 1px solid #4a5444; color: #fff; padding: 12px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; font-size: 14px; }
+        .btn-close-modal:hover { background: #3b4238; border-color: #98c379; }
 
         @media(max-width: 600px) {
             .cart-item { flex-direction: column; align-items: stretch; text-align: center; }
             .cart-item-img { align-self: center; }
             .item-price { text-align: center; margin-top: 10px; }
             .qty-controls { justify-content: center; }
-            .banks-grid { flex-direction: column; }
         }
     </style>
 </head>
@@ -135,68 +116,18 @@
         <div class="payment-content">
             <div class="payment-header">
                 <h2>✅ Замовлення №<span id="payOrderId">...</span> оформлено!</h2>
-                <p>Сума до оплати: <strong style="color: #98c379; font-size: 20px;" id="payTotalAmount">0 ₴</strong></p>
+                <p>Сума до сплати: <strong style="color: #98c379; font-size: 22px;" id="payTotalAmount">0 ₴</strong></p>
             </div>
 
             <div class="payment-alert">
-                ⚠️ ВАЖЛИВО: Обов'язково вкажіть "Замовлення №<span id="payOrderIdAlert">...</span>" у коментарі до платежу, щоб ми могли швидко його ідентифікувати!
+                💳 Натисніть кнопку нижче, щоб сформувати безпечний рахунок через Monobank. Після оплати статус замовлення оновить автоматичний вебіхук.
             </div>
 
-            <div class="banks-grid">
-                <!-- МОНОБАНК -->
-                <div class="bank-card bank-mono">
-                    <div class="bank-title">🐾 Монобанк</div>
-                    <div class="qr-placeholder">
-                        <img src="QR_MONO.jpeg" alt="QR Mono">
-                    </div>
-                    
-                    <div class="req-row">
-                        <div class="req-label">Номер картки / Банки:</div>
-                        <div class="req-value">
-                            <span id="monoCard">4441 1144 2222 3333</span>
-                            <button type="button" class="btn-copy" onclick="copyText('4441 1111 2935 0884', this)">Копіювати</button>
-                        </div>
-                    </div>
+            <button type="button" id="payMonoBtn" onclick="createMonoInvoice()" class="btn-pay-link btn-mono-link">
+                💳 Сплатити через Monobank
+            </button>
 
-                    <div class="req-row">
-                        <div class="req-label">IBAN:</div>
-                        <div class="req-value">
-                            <span id="monoIban" style="font-size: 13px;">UA033220010000026204350323443</span>
-                            <button type="button" class="btn-copy" onclick="copyText('UA033220010000026204350323443', this)">Копіювати</button>
-                        </div>
-                    </div>
-
-                    <a href="https://send.monobank.ua/jar/3K3sghb29v" target="_blank" class="btn-pay-link btn-mono-link">Оплатити через Monobank</a>
-                </div>
-
-                <!-- ПРИВАТБАНК -->
-                <div class="bank-card bank-privat">
-                    <div class="bank-title">🟩 ПриватБанк</div>
-                    <div class="qr-placeholder">
-                        <img src="QR_Privat.jpeg" alt="QR Privat">
-                    </div>
-
-                    <div class="req-row">
-                        <div class="req-label">Номер картки / Конверта:</div>
-                        <div class="req-value">
-                            <span id="privatCard">5168 7500 0000 0000</span>
-                            <button type="button" class="btn-copy" onclick="copyText('5168750000000000', this)">Копіювати</button>
-                        </div>
-                    </div>
-
-                    <div class="req-row">
-                        <div class="req-label">IBAN:</div>
-                        <div class="req-value">
-                            <span id="privatIban" style="font-size: 13px;">UA987654321098765432109876543</span>
-                            <button type="button" class="btn-copy" onclick="copyText('UA987654321098765432109876543', this)">Копіювати</button>
-                        </div>
-                    </div>
-
-                    <a href="https://next.privat24.ua/money-transfer/card?acc=5168750000000000" target="_blank" class="btn-pay-link btn-privat-link">Оплатити через Приват24</a>
-                </div>
-            </div>
-
-            <button class="btn-close-modal" onclick="finishOrder()">Я оплатив / Закрити</button>
+            <button class="btn-close-modal" onclick="finishOrder()">Перейти до моїх замовлень</button>
         </div>
     </div>
 
@@ -204,6 +135,7 @@
     <script>
         let cart = JSON.parse(localStorage.getItem('militaristica_cart')) || [];
         let orderTotalAmount = 0;
+        let createdOrderId = null; // Зберігаємо ID щойно створеного замовлення
 
         function renderCart() {
             let container = document.getElementById('cartContainer');
@@ -311,12 +243,11 @@
 
                 if (res.ok) {
                     let data = await res.json();
-                    let orderId = data.order_id; 
+                    createdOrderId = data.order_id; // Зберігаємо ID замовлення
 
                     localStorage.removeItem('militaristica_cart');
 
-                    document.getElementById('payOrderId').innerText = orderId;
-                    document.getElementById('payOrderIdAlert').innerText = orderId;
+                    document.getElementById('payOrderId').innerText = createdOrderId;
                     document.getElementById('payTotalAmount').innerText = orderTotalAmount + ' ₴';
 
                     document.getElementById('checkoutBox').style.display = 'none';
@@ -336,28 +267,15 @@
             }
         }
 
-        function copyText(text, btnElement) {
-            navigator.clipboard.writeText(text).then(() => {
-                let originalText = btnElement.innerText;
-                btnElement.innerText = "Скопійовано!";
-                btnElement.style.background = "#61afef";
-                btnElement.style.color = "#121212";
-                
-                setTimeout(() => {
-                    btnElement.innerText = originalText;
-                    btnElement.style.background = "#4a5444";
-                    btnElement.style.color = "#fff";
-                }, 2000);
-            }).catch(err => {
-                console.error('Помилка копіювання: ', err);
-            });
-        }
+        async function createMonoInvoice() {
+            if (!createdOrderId) {
+                alert("ID замовлення не знайдено!");
+                return;
+            }
 
-        function finishOrder() {
-            window.location.href = 'shop.html';
-        }
+            let btn = document.getElementById('payMonoBtn');
+            btn.disabled = true;
+            btn.innerText = "⏳ Генерація рахунку...";
 
-        document.addEventListener("DOMContentLoaded", renderCart);
-    </script>
-</body>
-</html>
+            try {
+                let res = await fetch(`/api
