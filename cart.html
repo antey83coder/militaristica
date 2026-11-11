@@ -142,7 +142,18 @@
             let checkoutBox = document.getElementById('checkoutBox');
             let totalEl = document.getElementById('totalPrice');
             
-            if (cart.length === 0) {
+            // Безпечно зчитуємо кошик
+            let rawCart = localStorage.getItem('militaristica_cart');
+            console.log("Сирі дані з localStorage:", rawCart); // Можна глянути в консоль F12
+            
+            try {
+                cart = rawCart ? JSON.parse(rawCart) : [];
+            } catch (e) {
+                console.error("Помилка парсингу кошика:", e);
+                cart = [];
+            }
+
+            if (!Array.isArray(cart) || cart.length === 0) {
                 container.innerHTML = '<div style="text-align: center; color: #888; padding: 40px; font-size: 18px;">🛒 Ваш кошик порожній. Час <a href="shop.html" style="color:#a33333;">зазирнути в магазин</a>!</div>';
                 checkoutBox.style.display = 'none';
                 return;
@@ -152,19 +163,25 @@
             orderTotalAmount = 0; 
 
             cart.forEach((item, index) => {
-                let itemSum = item.price * item.quantity;
+                let itemPrice = Number(item.price) || 0;
+                let itemQty = Number(item.quantity) || 1;
+                let itemSum = itemPrice * itemQty;
                 orderTotalAmount += itemSum; 
                 
+                let imgSrc = item.image || 'logo.jpg';
+                let itemTitle = item.title || 'Товар без назви';
+                let itemSku = item.sku || 'N/A';
+
                 container.innerHTML += `
                     <div class="cart-item">
-                        <img src="${item.image}" class="cart-item-img">
+                        <img src="${imgSrc}" class="cart-item-img" onerror="this.src='logo.jpg'">
                         <div class="cart-item-info">
-                            <div class="cart-item-title">${item.title}</div>
-                            <div class="cart-item-sku">Арт: ${item.sku}</div>
+                            <div class="cart-item-title">${itemTitle}</div>
+                            <div class="cart-item-sku">Арт: ${itemSku}</div>
                         </div>
                         <div class="qty-controls">
                             <button type="button" class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
-                            <span style="font-weight:bold; min-width:20px; text-align:center;">${item.quantity}</span>
+                            <span style="font-weight:bold; min-width:20px; text-align:center;">${itemQty}</span>
                             <button type="button" class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
                         </div>
                         <div class="item-price">${itemSum} ₴</div>
