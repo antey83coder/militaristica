@@ -29,8 +29,11 @@
         .order-items-list { margin: 0; padding-left: 15px; font-size: 13px; color: #ccc; }
         .order-items-list li { margin-bottom: 4px; }
 
-        .status-select { background: #282c34; color: white; border: 1px solid #444; padding: 8px; border-radius: 4px; font-weight: bold; cursor: pointer; outline: none; }
+        .status-select { background: #282c34; color: white; border: 1px solid #444; padding: 8px; border-radius: 4px; font-weight: bold; cursor: pointer; outline: none; width: 100%; margin-bottom: 6px; }
         .status-select:focus { border-color: #a33333; }
+
+        .btn-green-small { background-color: #98c379; color: #121212; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; width: 100%; transition: 0.3s; }
+        .btn-green-small:hover { background-color: #7cb05a; }
 
         .badge-new { color: #e06c75; }
         .badge-processing { color: #61afef; }
@@ -113,6 +116,12 @@
                         itemsHtml = `<li>${o.items_json}</li>`;
                     }
 
+                    // Кнопка оплати через Monobank (з'являється, якщо ще не сплачено)
+                    let payButtonHtml = '';
+                    if (o.payment_status !== 'Оплачено') {
+                        payButtonHtml = `<button class="btn-green-small" onclick="payWithMonobank(${o.id})">💳 Сплатити Mono</button>`;
+                    }
+
                     tbody.innerHTML += `
                         <tr>
                             <td>
@@ -141,6 +150,7 @@
                                     <option value="Оплачено" ${o.payment_status === 'Оплачено' ? 'selected' : ''}>💳 Оплачено</option>
                                     <option value="Накладений платіж" ${o.payment_status === 'Накладений платіж' ? 'selected' : ''}>📦 Післяплата</option>
                                 </select>
+                                ${payButtonHtml}
                             </td>
                         </tr>
                     `;
@@ -170,6 +180,31 @@
                 body: formData 
             });
             if (!res.ok) alert("Не вдалося оновити статус оплати. Можливо, закінчився час сесії (потрібно перелогінитись).");
+        }
+
+        // Функція створення платежу через Monobank та перенаправлення
+        async function payWithMonobank(orderId) {
+            try {
+                console.log("Створюється платіжне посилання...");
+                let res = await fetch(`/api/orders/${orderId}/create-invoice`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + user.token
+                    }
+                });
+
+                let data = await res.json();
+
+                if (res.ok && data.pageUrl) {
+                    window.location.href = data.pageUrl;
+                } else {
+                    alert("Помилка створення платежу: " + (data.detail || "Невідома помилка"));
+                }
+            } catch (error) {
+                console.error("По мережі сталася помилка:", error);
+                alert("Не вдалося підключитися до сервера. Перевірте з'єднання.");
+            }
         }
 
         document.addEventListener("DOMContentLoaded", loadOrders);

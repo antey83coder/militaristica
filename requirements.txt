@@ -1,8 +1,8 @@
 fastapi
 uvicorn
+databases
 sqlalchemy
-databases[sqlite]
+asyncpg
+psycopg2-binary
 python-multipart
 pyjwt
-asyncpg
-psycopg[binary]

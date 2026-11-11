@@ -27,10 +27,10 @@
         .header-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; } 
 
         /* КНОПКИ ТА НАВІГАЦІЯ */
-        .btn-red { background-color: #a33333; color: white; border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 14px; transition: 0.2s; }
+        .btn-red { background-color: #a33333; color: white; border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 14px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
         .btn-red:hover { background-color: #bd3a3a; } 
         
-        .btn-dark { background-color: #2b3028; color: white; border: 1px solid #4a5444; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 14px; transition: 0.2s; }
+        .btn-dark { background-color: #2b3028; color: white; border: 1px solid #4a5444; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 14px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
         .btn-dark:hover { background-color: #3b4238; border-color: #a33333; } 
 
         .nav-btn { background-color: #2b3028; color: white; border: 1px solid #4a5444; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 14px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
@@ -69,7 +69,7 @@
         .forecast-table { width: 100%; text-align: left; border-collapse: collapse; font-size: 14px; }
         .forecast-table th { color: #888888; border-bottom: 1px solid #3b4238; font-size: 12px; text-transform: uppercase; padding: 10px; font-weight: bold; }
         .forecast-table td { padding: 12px 10px; border-bottom: 1px solid #2b3028; color: #dddddd; }
-        .forecast-table tr:hover { background-color: #2b3028/40; }
+        .forecast-table tr:hover { background-color: rgba(43, 48, 40, 0.4); }
 
         /* КАТЕГОРІЇ */
         .categories-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; width: 100%; } 
@@ -202,6 +202,7 @@
             <a href="cart.html">🛒 Мій кошик</a>
             <a href="auth.html">👤 Вхід / Реєстрація</a>
             <a href="profile.html">⚙️ Особистий кабінет</a>
+            <a href="my_orders.html">📦 Мої замовлення</a>
             <a href="donate.html" style="color: #98c379; margin-top: 15px; border-top: 1px solid #3b4238; padding-top: 25px;">🇺🇦 Підтримати ЗСУ (Донат)</a>
         </div>
     </div>
@@ -239,7 +240,7 @@
             <b>Militaristica</b> — це площадка для сильних і впевнених людей! У нас ви знайдете товари для мілітарної справи, спорту, туризму, активного відпочинку, роботи тощо.
         </div>
 
-        <!-- БЛОК АНАЛІТИЧНОГО ПРОГНОЗУ (ВІН ТЕПЕР РІВНЕНЬКО В СІТЦІ САЙТУ) -->
+        <!-- БЛОК АНАЛІТИЧНОГО ПРОГНОЗУ -->
         <div class="forecast-box">
             <div class="forecast-header">
                 <div>
@@ -337,7 +338,6 @@
                     <button class="stat-btn" style="background-color: #e06c75;" onclick="addLike('count4')">Х.УЙЛО!</button>
                     <div class="stat-count" id="count4">5320</div>
                 </div>
-                <!-- ОНОВЛЕНИЙ БЛОК ВВОДУ КОМЕНТАРІВ -->
                 <div class="stat-comments">
                     <input type="text" id="putinInput" placeholder="Додай від себе..." onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendComment(); }">
                     <button onclick="sendComment()" style="background-color: #a33333; border-color: #a33333; padding: 10px;" title="Надіслати">➕</button>
@@ -397,7 +397,30 @@
         const diffTime = Math.abs(new Date() - startWar);
         document.getElementById("warDays").innerText = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        // 2. АВТОМАТИЧНЕ ЗАВАНТАЖЕННЯ ДАНИХ ПРОГНОЗУ ІЗ JSON (З двома знаками після коми)
+        // Автоматичне оновлення шапки залежно від авторизації покупця
+        document.addEventListener("DOMContentLoaded", function() {
+            let user = JSON.parse(localStorage.getItem('militaristica_user'));
+            let userZone = document.getElementById('headerUserZone');
+            if (user && user.id && userZone) {
+                userZone.innerHTML = `
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <a href="my_orders.html" class="btn-dark" style="border-color: #98c379; color: #98c379;">📦 Мої замовлення</a>
+                        <a href="profile.html" class="user-pill">
+                            <div class="user-avatar">${user.name ? user.name[0].toUpperCase() : 'U'}</div>
+                            <span>${user.name}</span>
+                        </a>
+                        <button onclick="logout()" class="btn-red" style="padding: 10px 10px; font-size: 12px;">Вийти</button>
+                    </div>
+                `;
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('militaristica_user');
+            window.location.reload();
+        }
+
+        // 2. АВТОМАТИЧНЕ ЗАВАНТАЖЕННЯ ДАНИХ ПРОГНОЗУ ІЗ JSON
         async function loadWarForecast() {
             try {
                 const response = await fetch('war_forecast_data.json');
@@ -406,10 +429,8 @@
                 const data = await response.json();
                 const f = data.forecasts;
 
-                // Функція форматування до 2 знаків після коми
                 const fmt = (val) => val.toFixed(2) + '%';
 
-                // Заповнення комірок значеннями з JSON з двома знаками після коми
                 document.getElementById('russia-max-2026').innerText = fmt(f['2026'].russia_max);
                 document.getElementById('russia-part-2026').innerText = fmt(f['2026'].russia_partial);
                 document.getElementById('frozen-2026').innerText = fmt(f['2026'].frozen);

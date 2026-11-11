@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Form, UploadFile, File, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from datetime import datetime, timedelta
 import os
 import shutil
@@ -16,9 +16,11 @@ import hashlib
 import jwt
 import base64
 import asyncio
+from contextlib import asynccontextmanager
 
 # ================= НАЛАШТУВАННЯ ================= #
 IMGBB_API_KEY = "0622c07513943192add7076ce8eb167e"
+MONO_TOKEN = os.getenv("MONO_TOKEN", "ТУТ_ВСТАВТЕ_ВАШ_MONOBANK_TOKEN")
 
 for folder in ["uploads", "goods_types", "sn_logos", "forses_logos"]:
     os.makedirs(folder, exist_ok=True)
@@ -83,7 +85,6 @@ async def upload_to_imgbb(file: UploadFile) -> str:
             method="POST"
         )
         
-        # Запускаємо блокуючий urllib в окремому потоці, щоб не вішати сервер
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, urllib.request.urlopen, req)
         
@@ -94,7 +95,17 @@ async def upload_to_imgbb(file: UploadFile) -> str:
         print(f"Помилка завантаження на ImgBB: {e}")
         return ""
 
-# --- ТАБЛИЦІ БАЗИ ДАНИХ ---
+# ================= ТАБЛИЦІ БАЗИ ДАНИХ ================= #
+
+ranks = sqlalchemy.Table(
+    "ranks", metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True, autoincrement=True),
+    sqlalchemy.Column("name", sqlalchemy.String(50), unique=True, nullable=False),
+    sqlalchemy.Column("min_activity", sqlalchemy.Numeric(12, 2), nullable=False),
+    sqlalchemy.Column("max_activity", sqlalchemy.Numeric(12, 2), nullable=False),
+    sqlalchemy.Column("commission_rate", sqlalchemy.Numeric(5, 4), nullable=False),
+)
+
 products = sqlalchemy.Table(
     "products", metadata,
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
@@ -128,6 +139,8 @@ orders = sqlalchemy.Table(
     sqlalchemy.Column("payment_status", sqlalchemy.String, default="Очікує оплати"),
     sqlalchemy.Column("created_at", sqlalchemy.String, default=lambda: datetime.now().strftime("%Y-%m-%d %H:%M")),
     sqlalchemy.Column("user_id", sqlalchemy.Integer, default=0),
+    sqlalchemy.Column("commission", sqlalchemy.Numeric(10, 2), default=0.00),
+    sqlalchemy.Column("seller_payout", sqlalchemy.Numeric(10, 2), default=0.00),
 )
 
 users = sqlalchemy.Table(
@@ -137,6 +150,7 @@ users = sqlalchemy.Table(
     sqlalchemy.Column("email", sqlalchemy.String, unique=True, nullable=False),
     sqlalchemy.Column("password", sqlalchemy.String, nullable=False),
     sqlalchemy.Column("rank", sqlalchemy.String, default="Рекрут"),
+    sqlalchemy.Column("total_activity", sqlalchemy.Numeric(12, 2), default=0.00),
     sqlalchemy.Column("discount", sqlalchemy.Integer, default=0),
     sqlalchemy.Column("role", sqlalchemy.String, default="user"),
     sqlalchemy.Column("avatar_url", sqlalchemy.String, default=""),
@@ -162,7 +176,47 @@ else:
 
 metadata.create_all(engine)
 
-app = FastAPI(title="Militaristica API")
+# --- ЖИТТЄВИЙ ЦИКЛ FastAPI ТА ІНІЦІАЛІЗАЦІЯ ЗВАНЬ ---
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await database.connect()
+    try: 
+        await database.execute("ALTER TABLE users ADD COLUMN telegram_chat_id TEXT DEFAULT ''")
+    except Exception: 
+        pass
+    try: 
+        await database.execute("ALTER TABLE users ADD COLUMN total_activity NUMERIC(12,2) DEFAULT 0.00")
+    except Exception: 
+        pass
+    try: 
+        await database.execute("ALTER TABLE orders ADD COLUMN commission NUMERIC(10,2) DEFAULT 0.00")
+        await database.execute("ALTER TABLE orders ADD COLUMN seller_payout NUMERIC(10,2) DEFAULT 0.00")
+    except Exception: 
+        pass
+
+    # Заповнюємо початкові звання ЗСУ та комісії, якщо таблиця порожня
+    existing_rank = await database.fetch_one(ranks.select())
+    if not existing_rank:
+        default_ranks = [
+            ("Рекрут", 0, 5000, 0.0500),
+            ("Солдат", 5001, 10000, 0.0450),
+            ("Сержант", 10001, 20000, 0.0400),
+            ("Лейтенант", 20001, 35000, 0.0350),
+            ("Капітан", 35001, 50000, 0.0300),
+            ("Майор", 50001, 75000, 0.0250),
+            ("Полковник", 75001, 100000, 0.0200),
+            ("Генерал", 100001, 300000, 0.0100),
+            ("Маршал", 300001, 1000000, 0.0010),
+        ]
+        for name, min_a, max_a, rate in default_ranks:
+            await database.execute(ranks.insert().values(
+                name=name, min_activity=min_a, max_activity=max_a, commission_rate=rate
+            ))
+
+    yield
+    await database.disconnect()
+
+app = FastAPI(title="Militaristica API", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 CATEGORY_PREFIXES = {
@@ -171,15 +225,36 @@ CATEGORY_PREFIXES = {
     "com_goods": "COM", "2hetd_goods": "SEC"
 }
 
-@app.on_event("startup")
-async def startup():
-    await database.connect()
-    try: await database.execute("ALTER TABLE users ADD COLUMN telegram_chat_id TEXT DEFAULT ''")
-    except Exception: pass
+# --- ЛОГІКА ОНОВЛЕННЯ АКТИВНОСТІ ТА ЗВАННЯ ---
+async def process_user_activity(user_id: int, amount: float):
+    user = await database.fetch_one(users.select().where(users.c.id == user_id))
+    if not user:
+        return
+    
+    current_act = float(user["total_activity"] or 0)
+    new_activity = current_act + amount
+    
+    # Шукаємо ранг у таблиці ranks
+    all_ranks = await database.fetch_all(ranks.select())
+    matched_rank_name = "Рекрут"
+    commission_rate = 0.0500
+    
+    for r in all_ranks:
+        if float(r["min_activity"]) <= new_activity <= float(r["max_activity"]):
+            matched_rank_name = r["name"]
+            commission_rate = float(r["commission_rate"])
+            break
+            
+    if new_activity > 1000000:
+        matched_rank_name = "Маршал"
+        commission_rate = 0.0010
 
-@app.on_event("shutdown")
-async def shutdown():
-    await database.disconnect()
+    await database.execute(
+        users.update().where(users.c.id == user_id).values(
+            total_activity=new_activity, rank=matched_rank_name
+        )
+    )
+    return matched_rank_name, commission_rate
 
 # ================= АВТОРИЗАЦІЯ ТА КОРИСТУВАЧІ ================= #
 @app.post("/api/auth/register")
@@ -189,7 +264,7 @@ async def register_user(name: str = Form(...), email: str = Form(...), password:
     
     hashed_pwd = hash_password(password)
     user_id = await database.execute(users.insert().values(
-        name=name, email=email, password=hashed_pwd, rank="Рекрут", discount=0, role="user", avatar_url=""
+        name=name, email=email, password=hashed_pwd, rank="Рекрут", total_activity=0.00, discount=0, role="user", avatar_url=""
     ))
     return {"status": "success", "id": user_id, "user_id": user_id, "name": name, "telegram_chat_id": ""}
 
@@ -224,7 +299,6 @@ async def admin_login(email: str = Form(...), admin_password: str = Form(...)):
         "access_token": access_token
     }
 
-# --- ЗМІНА ПАРОЛЯ З КАБІНЕТУ ---
 @app.post("/api/users/change-password")
 async def change_password(
     old_password: str = Form(...),
@@ -245,7 +319,6 @@ async def change_password(
     await database.execute(users.update().where(users.c.id == current_user_id).values(password=new_hash))
     return {"status": "success", "message": "Пароль успішно змінено!"}
 
-# --- ВІДНОВЛЕННЯ ЗАБУТОГО ПАРОЛЯ ---
 @app.post("/api/auth/forgot-password")
 async def forgot_password(email: str = Form(...)):
     user = await database.fetch_one(users.select().where(users.c.email == email))
@@ -291,7 +364,6 @@ async def reset_password(token: str = Form(...), new_password: str = Form(...)):
     await database.execute(users.update().where(users.c.id == user["id"]).values(password=new_hash, verify_token=""))
     return {"status": "success", "message": "Пароль успішно змінено. Тепер ви можете увійти!"}
 
-# --- ФУНКЦІЯ ВИДАЛЕННЯ КОРИСТУВАЧА ---
 @app.delete("/api/users/{user_id}")
 async def delete_user(user_id: int, current_user_id: int = Depends(verify_token)):
     admin = await database.fetch_one(users.select().where(users.c.id == current_user_id))
@@ -455,7 +527,7 @@ async def get_product(product_id: int):
     prod = await database.fetch_one(products.select().where(products.c.id == product_id))
     return dict(prod) if prod else None
 
-# ================= ЗАМОВЛЕННЯ ================= #
+# ================= ЗАМОВЛЕННЯ ТА MONOBANK ================= #
 @app.post("/api/orders/add")
 async def create_order(
     customer_name: str = Form(...), phone: str = Form(...), delivery_info: str = Form(...),
@@ -473,7 +545,8 @@ async def create_order(
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M")
     order_id = await database.execute(orders.insert().values(
         customer_name=customer_name, phone=phone, delivery_info=delivery_info,
-        items_json=items_json, total_price=total_price, user_id=user_id, created_at=current_time
+        items_json=items_json, total_price=total_price, user_id=user_id, created_at=current_time,
+        payment_status="Очікує оплати"
     ))
     
     seller_notifications = {}
@@ -512,7 +585,7 @@ async def create_order(
         if seller_dict.get("telegram_chat_id"):
             try:
                 items_text_tg = "\n".join([f"🔹 {p['title']} (x{p['qty']}) — {p['price'] * p['qty']} ₴" for p in prods])
-                tg_text = (f"🚨 *НОВЕ ЗАМОВЛЕННЯ №{order_id}* 🚨\n\n👤 *Покупець:* {customer_name}\n📞 *Телефон:* {phone}\n📍 *Доставка:* {delivery_info}\n\n📦 *Товари:*\n{items_text_tg}\n\n💰 *До оплати:* {total_sum} ₴")
+                tg_text = f"🚨 *НОВЕ ЗАМОВЛЕННЯ №{order_id}* 🚨\n\n👤 *Покупець:* {customer_name}\n📞 *Телефон:* {phone}\n📍 *Доставка:* {delivery_info}\n\n📦 *Товари:*\n{items_text_tg}\n\n💰 *До оплати:* {total_sum} ₴"
                 url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
                 data = urllib.parse.urlencode({"chat_id": seller_dict["telegram_chat_id"], "text": tg_text, "parse_mode": "Markdown"}).encode('utf-8')
                 urllib.request.urlopen(urllib.request.Request(url, data=data))
@@ -520,6 +593,88 @@ async def create_order(
                 print("Помилка Telegram:", e)
 
     return {"status": "success", "order_id": order_id}
+
+@app.post("/api/orders/{order_id}/create-invoice")
+async def create_monobank_invoice(order_id: int):
+    order = await database.fetch_one(orders.select().where(orders.c.id == order_id))
+    if not order:
+        raise HTTPException(status_code=404, detail="Замовлення не знайдено.")
+        
+    amount = float(order["total_price"])
+    amount_in_kopecks = int(amount * 100)
+    
+    payload = {
+        "amount": amount_in_kopecks,
+        "ccy": 980,
+        "merchantPaymInfo": {
+            "reference": str(order_id),
+            "destination": f"Оплата замовлення #{order_id} на Militaristica"
+        },
+        "webHookUrl": "https://militaristica.onrender.com/api/webhook/monobank"
+    }
+    
+    headers = {
+        "X-Token": MONO_TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    req = urllib.request.Request(
+        "https://api.monobank.ua/api/merchant/invoice/create",
+        data=json.dumps(payload).encode("utf-8"),
+        headers=headers,
+        method="POST"
+    )
+    
+    try:
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(None, urllib.request.urlopen, req)
+        res_data = json.loads(response.read().decode("utf-8"))
+        return {"status": "success", "invoiceId": res_data.get("invoiceId"), "pageUrl": res_data.get("pageUrl")}
+    except Exception as e:
+        print("Помилка створення інвойсу Monobank:", e)
+        raise HTTPException(status_code=400, detail=f"Не вдалося створити платіж: {str(e)}")
+
+@app.post("/api/webhook/monobank")
+async def monobank_webhook(request: Request):
+    try:
+        data = await request.json()
+        if data.get("status") == "success":
+            reference = data.get("merchantPaymInfo", {}).get("reference")
+            paid_amount = float(data.get("amount", 0)) / 100.0
+            
+            if reference:
+                order = await database.fetch_one(orders.select().where(orders.c.id == int(reference)))
+                if order and order["payment_status"] != "Оплачено":
+                    # Оновлюємо статус замовлення
+                    await database.execute(
+                        orders.update().where(orders.c.id == int(reference)).values(
+                            payment_status="Оплачено", status="Підтверджено"
+                        )
+                    )
+                    
+                    # 1. Зараховуємо активність покупцю (як купівля)
+                    buyer_id = order["user_id"]
+                    if buyer_id:
+                        await process_user_activity(buyer_id, paid_amount)
+                        
+                    # 2. Парсимо товари та зараховуємо активність кожному продавцю (як продаж)
+                    try:
+                        items = json.loads(order["items_json"])
+                        for item in items:
+                            prod_id = item.get("id")
+                            if prod_id:
+                                prod = await database.fetch_one(products.select().where(products.c.id == int(prod_id)))
+                                if prod and prod["owner_id"]:
+                                    seller_id = prod["owner_id"]
+                                    item_sum = float(prod["price"]) * int(item.get("quantity", 1))
+                                    await process_user_activity(seller_id, item_sum)
+                    except Exception as ex:
+                        print("Помилка нарахування активності продавцям:", ex)
+                        
+    except Exception as e:
+        print("Помилка Monobank webhook:", e)
+        
+    return {"status": "ok"}
 
 @app.get("/api/orders")
 async def get_orders(): 
@@ -578,9 +733,6 @@ async def delete_media(media_id: int, requester_id: int):
     return {"status": "success"}
 
 # ================= OPEN GRAPH ТА СТАТИКА ================= #
-from fastapi.responses import PlainTextResponse
-
-# Офіційний дозвіл для сканерів Фейсбуку (щоб уникнути помилки 403)
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def get_robots():
     return "User-agent: *\nAllow: /\nUser-agent: facebookexternalhit\nAllow: /\nUser-agent: Facebot\nAllow: /"
@@ -631,7 +783,6 @@ async def serve_product_page_with_og(id: int = 0):
     <meta property="og:url" content="{canonical_url}" />
     """
 
-    # Гарантоване вставлення тегів перед закриваючим тегом head
     if "<!-- OG_META_TAGS -->" in html_content:
         rendered_html = html_content.replace("<!-- OG_META_TAGS -->", og_tags)
     elif "</head>" in html_content:
@@ -647,6 +798,5 @@ app.mount("/sn_logos", StaticFiles(directory="sn_logos"), name="sn_logos")
 app.mount("/forses_logos", StaticFiles(directory="forses_logos"), name="forses_logos")
 app.mount("/", StaticFiles(directory=".", html=True), name="static")
 
-import uvicorn
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

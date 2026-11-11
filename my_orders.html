@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Militaristica — Мої замовлення</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        h1 { color: #fff; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .order-card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .btn-pay { background-color: #98c379; color: #121212; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 10px; transition: 0.3s; }
+        .btn-pay:hover { background-color: #7cb05a; }
+        .order-items { margin: 10px 0; padding-left: 20px; color: #ccc; font-size: 14px; }
+        .order-items li { margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📦 Мої замовлення</h1>
+        <div id="userOrdersList">Завантаження замовлень...</div>
+        <p style="margin-top: 30px;"><a href="index.html" style="color: #61afef; text-decoration: none;">← На головну сторінку</a></p>
+    </div>
+
+    <script>
+        // Перевіряємо, чи користувач залогинений
+        let user = JSON.parse(localStorage.getItem('militaristica_user'));
+        if (!user || !user.id) {
+            alert("Будь ласка, увійдіть в систему!");
+            window.location.href = 'index.html';
+        }
+
+        async function loadUserOrders() {
+            try {
+                let res = await fetch(`/api/orders/user/${user.id}`);
+                let orders = await res.json();
+                
+                let container = document.getElementById('userOrdersList');
+                container.innerHTML = '';
+
+                if (orders.length === 0) {
+                    container.innerHTML = '<p style="color: #888; padding: 20px 0;">У вас поки немає оформлених замовлень.</p>';
+                    return;
+                }
+
+                orders.forEach(o => {
+                    let itemsHtml = '';
+                    try {
+                        let items = JSON.parse(o.items_json);
+                        items.forEach(i => {
+                            let itemPrice = Number(i.price) || 0;
+                            let itemQty = Number(i.quantity) || 1;
+                            itemsHtml += `<li><b>${i.title}</b> (${itemQty} шт.) — ${itemPrice * itemQty} ₴</li>`;
+                        });
+                    } catch(e) {
+                        itemsHtml = `<li>${o.items_json}</li>`;
+                    }
+
+                    // Кнопка оплати з'являється тільки якщо замовлення ще не оплачене
+                    let payButton = '';
+                    if (o.payment_status !== 'Оплачено') {
+                        payButton = `<button class="btn-pay" onclick="payWithMonobank(${o.id})">💳 Сплатити через Monobank</button>`;
+                    } else {
+                        payButton = `<p style="color: #98c379; font-weight: bold; margin-top: 10px;">✅ Оплачено</p>`;
+                    }
+
+                    container.innerHTML += `
+                        <div class="order-card">
+                            <div class="order-header">
+                                <strong style="color: #e06c75; font-size: 16px;">Замовлення #${o.id}</strong>
+                                <span style="color: #888; font-size: 13px;">${o.created_at}</span>
+                            </div>
+                            <p style="margin: 5px 0;"><b>Статус виконання:</b> ${o.status}</p>
+                            <p style="margin: 5px 0;"><b>Статус оплати:</b> ${o.payment_status}</p>
+                            <ul class="order-items">${itemsHtml}</ul>
+                            <p style="margin: 10px 0 0 0;"><b>Сума до сплати:</b> <span style="color: #98c379; font-size: 18px;">${o.total_price} ₴</span></p>
+                            ${payButton}
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.error("Помилка:", err);
+                document.getElementById('userOrdersList').innerHTML = '<p style="color: #e06c75;">Не вдалося завантажити замовлення.</p>';
+            }
+        }
+
+        // Функція ініціалізації платежу через Monobank
+        async function payWithMonobank(orderId) {
+            try {
+                let res = await fetch(`/api/orders/${orderId}/create-invoice`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                });
+                let data = await res.json();
+                if (res.ok && data.pageUrl) {
+                    window.location.href = data.pageUrl;
+                } else {
+                    alert("Помилка створення платежу: " + (data.detail || "Невідома помилка"));
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Не вдалося підключитися до сервера при створенні платежу.");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", loadUserOrders);
+    </script>
+</body>
+</html>
