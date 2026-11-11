@@ -133,18 +133,16 @@
 
     <!-- ================= JAVASCRIPT ================= -->
     <script>
-        let cart = JSON.parse(localStorage.getItem('militaristica_cart')) || [];
+        let cart = [];
         let orderTotalAmount = 0;
-        let createdOrderId = null; // Зберігаємо ID щойно створеного замовлення
+        let createdOrderId = null;
 
         function renderCart() {
             let container = document.getElementById('cartContainer');
             let checkoutBox = document.getElementById('checkoutBox');
             let totalEl = document.getElementById('totalPrice');
             
-            // Безпечно зчитуємо кошик
             let rawCart = localStorage.getItem('militaristica_cart');
-            console.log("Сирі дані з localStorage:", rawCart); // Можна глянути в консоль F12
             
             try {
                 cart = rawCart ? JSON.parse(rawCart) : [];
@@ -260,7 +258,7 @@
 
                 if (res.ok) {
                     let data = await res.json();
-                    createdOrderId = data.order_id; // Зберігаємо ID замовлення
+                    createdOrderId = data.order_id;
 
                     localStorage.removeItem('militaristica_cart');
 
@@ -295,4 +293,38 @@
             btn.innerText = "⏳ Генерація рахунку...";
 
             try {
-                let res = await fetch(`/api
+                let res = await fetch(`/api/orders/${createdOrderId}/create-invoice`, {
+                    method: 'POST'
+                });
+
+                if (res.ok) {
+                    let data = await res.json();
+                    if (data.pageUrl) {
+                        window.location.href = data.pageUrl;
+                    } else {
+                        alert("Не вдалося отримати посилання на оплату від Monobank.");
+                        btn.disabled = false;
+                        btn.innerText = "💳 Сплатити через Monobank";
+                    }
+                } else {
+                    let err = await res.json();
+                    alert("Помилка створення інвойсу: " + (err.detail || 'Невідома помилка'));
+                    btn.disabled = false;
+                    btn.innerText = "💳 Сплатити через Monobank";
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Помилка зв'язку з сервером при створенні платежу.");
+                btn.disabled = false;
+                btn.innerText = "💳 Сплатити через Monobank";
+            }
+        }
+
+        function finishOrder() {
+            window.location.href = 'my_orders.html';
+        }
+
+        document.addEventListener("DOMContentLoaded", renderCart);
+    </script>
+</body>
+</html>
