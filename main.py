@@ -608,7 +608,7 @@ async def create_monobank_invoice(order_id: int):
         "ccy": 980,
         "merchantPaymInfo": {
             "reference": str(order_id),
-            "destination": f"Оплата замовлення #{order_id} на Militaristica"
+            "destination": f"Order #{order_id} payment on Militaristica"  # <--- Змінено на латиницю
         },
         "webHookUrl": "https://militaristica.onrender.com/api/webhook/monobank"
     }
