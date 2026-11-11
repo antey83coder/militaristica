@@ -4,5 +4,6 @@ databases
 sqlalchemy
 asyncpg
 psycopg2-binary
+psycopg
 python-multipart
 pyjwt
