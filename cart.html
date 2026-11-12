@@ -56,11 +56,19 @@
         .payment-header { margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
         .payment-header h2 { color: #98c379; margin: 0 0 10px 0; font-size: 24px; }
         .payment-header p { color: #aaa; margin: 0; font-size: 15px; }
-        .payment-alert { background: rgba(152, 195, 121, 0.1); border-left: 4px solid #98c379; padding: 12px 15px; color: #ddd; font-size: 14px; margin-bottom: 25px; text-align: left; line-height: 1.5; }
+        .payment-alert { background: rgba(152, 195, 121, 0.1); border-left: 4px solid #98c379; padding: 12px 15px; color: #ddd; font-size: 14px; margin-bottom: 20px; text-align: left; line-height: 1.5; }
         
-        .btn-pay-link { display: inline-block; width: 100%; padding: 15px; border-radius: 6px; font-weight: 900; font-size: 16px; text-decoration: none; color: white; margin-bottom: 15px; transition: 0.2s; box-sizing: border-box; text-transform: uppercase; cursor: pointer; border: none; }
+        .btn-pay-link { display: inline-block; width: 100%; padding: 15px; border-radius: 6px; font-weight: 900; font-size: 16px; text-decoration: none; color: white; margin-bottom: 12px; transition: 0.2s; box-sizing: border-box; text-transform: uppercase; cursor: pointer; border: none; }
         .btn-mono-link { background: #ff4747; border: 1px solid #cc3a3a; }
         .btn-mono-link:hover { background: #e63e3e; }
+
+        /* Ряд з двома альтернативними кнопками оплати */
+        .alt-pay-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .btn-alt-pay { flex: 1; padding: 14px 10px; border-radius: 6px; font-weight: 900; font-size: 15px; text-decoration: none; color: #ffffff; transition: 0.2s; text-align: center; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+        .btn-jar-mono { background-color: #000000; border: 1px solid #444444; }
+        .btn-jar-mono:hover { background-color: #141414; border-color: #777777; }
+        .btn-env-privat { background-color: #54a832; border: 1px solid #438a27; }
+        .btn-env-privat:hover { background-color: #469128; }
         
         .btn-close-modal { background: #2b3028; border: 1px solid #4a5444; color: #fff; padding: 12px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; font-size: 14px; }
         .btn-close-modal:hover { background: #3b4238; border-color: #98c379; }
@@ -70,6 +78,7 @@
             .cart-item-img { align-self: center; }
             .item-price { text-align: center; margin-top: 10px; }
             .qty-controls { justify-content: center; }
+            .alt-pay-row { flex-direction: column; }
         }
     </style>
 </head>
@@ -120,12 +129,21 @@
             </div>
 
             <div class="payment-alert">
-                💳 Натисніть кнопку нижче, щоб сформувати безпечний рахунок через Monobank. Після оплати статус замовлення оновить автоматичний вебіхук.
+                💳 Оберіть зручний спосіб оплати нижче. При поповненні банки або конверта, будь ласка, вкажіть <strong>номер вашого замовлення</strong> у коментарі до платежу.
             </div>
 
             <button type="button" id="payMonoBtn" onclick="createMonoInvoice()" class="btn-pay-link btn-mono-link">
-                💳 Сплатити через Monobank
+                ОПЛАТИТИ ЗАМОВЛЕННЯ
             </button>
+
+            <div class="alt-pay-row">
+                <a href="https://send.monobank.ua/jar/3K3sghb29v" target="_blank" rel="noopener noreferrer" class="btn-alt-pay btn-jar-mono">
+                    MonoBank
+                </a>
+                <a href="https://next.privat24.ua/send/4v2q0" target="_blank" rel="noopener noreferrer" class="btn-alt-pay btn-env-privat">
+                    PrivatBank
+                </a>
+            </div>
 
             <button class="btn-close-modal" onclick="finishOrder()">Перейти до моїх замовлень</button>
         </div>
@@ -304,19 +322,19 @@
                     } else {
                         alert("Не вдалося отримати посилання на оплату від Monobank.");
                         btn.disabled = false;
-                        btn.innerText = "💳 Сплатити через Monobank";
+                        btn.innerText = "ОПЛАТИТИ ЗАМОВЛЕННЯ";
                     }
                 } else {
                     let err = await res.json();
                     alert("Помилка створення інвойсу: " + (err.detail || 'Невідома помилка'));
                     btn.disabled = false;
-                    btn.innerText = "💳 Сплатити через Monobank";
+                    btn.innerText = "ОПЛАТИТИ ЗАМОВЛЕННЯ";
                 }
             } catch (e) {
                 console.error(e);
                 alert("Помилка зв'язку з сервером при створенні платежу.");
                 btn.disabled = false;
-                btn.innerText = "💳 Сплатити через Monobank";
+                btn.innerText = "ОПЛАТИТИ ЗАМОВЛЕННЯ";
             }
         }
 
