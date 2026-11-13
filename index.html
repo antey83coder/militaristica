@@ -162,6 +162,25 @@
             .stat-comments button { width: 100%; }
             .footer-full { flex-direction: column; justify-content: center; } 
             .footer-row { justify-content: center; }
+
+            /* --- Додаємо сюди правила для панелі користувача на мобільних --- */
+            #headerUserZone > div {
+                flex-direction: column !important;
+                width: 100% !important;
+                align-items: stretch !important;
+                gap: 8px !important;
+            }
+            #headerUserZone a, 
+            #headerUserZone button {
+                width: 100% !important;
+                box-sizing: border-box !important;
+                justify-content: center !important;
+                display: flex !important;
+            }
+            #headerUserZone .user-pill {
+                justify-content: flex-start !important;
+                padding: 8px 15px !important;
+            }
         }
 
         /* --- Стилі для мерехтливої кнопки Койот --- */
