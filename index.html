@@ -163,13 +163,15 @@
             .footer-full { flex-direction: column; justify-content: center; } 
             .footer-row { justify-content: center; }
 
-            /* Мобільне оформлення хедера для авторизованого користувача */
+            /* Строге мобільне вирівнювання елементів керування в шапці */
             .header-right {
-                display: flex;
                 flex-direction: column;
-                gap: 10px;
+                align-items: stretch;
                 width: 100%;
-                align-items: center;
+            }
+            .header-right > input.search-input {
+                width: 100% !important;
+                box-sizing: border-box;
             }
             .header-right > a.btn-dark,
             .header-right > a.donate-btn {
@@ -178,35 +180,28 @@
                 justify-content: center;
                 display: flex;
             }
-            .user-logged-panel {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
+            #headerUserZone {
                 width: 100%;
             }
-            .order-btn-mobile {
-                width: 100%;
-                box-sizing: border-box;
-                justify-content: center;
-                display: flex;
+            #headerUserZone > div {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                gap: 8px !important;
+                align-items: stretch !important;
             }
-            .user-row-mobile {
-                display: flex;
-                gap: 8px;
-                width: 100%;
-                align-items: center;
-                justify-content: space-between;
+            #headerUserZone > div > a,
+            #headerUserZone > div > button {
+                width: 100% !important;
+                box-sizing: border-box !important;
+                justify-content: center !important;
+                display: flex !important;
             }
-            .user-row-mobile .user-pill {
-                flex-grow: 1;
-                overflow: hidden;
-                justify-content: flex-start;
-            }
-            .logout-btn-mobile {
-                padding: 10px 15px !important;
-                font-size: 14px !important;
-                flex-shrink: 0;
-                width: auto !important;
+            #headerUserZone .user-pill {
+                justify-content: flex-start !important;
+                padding: 6px 15px 6px 6px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
         }
 
@@ -363,269 +358,4 @@
                 </div>
                 <div class="stat-comments">
                     <input type="text" id="putinInput" placeholder="Додай від себе..." onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendComment(); }">
-                    <button onclick="sendComment()" style="background-color: #a33333; border-color: #a33333; padding: 10px;" title="Надіслати">➕</button>
-                    <button id="commentBtn" onclick="toggleComments()">💬 Коментарі (3)</button>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- ВІКНО З КОМЕНТАРЯМИ -->
-    <div id="commentsOverlay" class="menu-overlay" onclick="toggleComments()"></div>
-    <div id="commentsPopup" class="comments-popup">
-        <div class="comments-header">
-            <h3>Коментарі</h3>
-            <button onclick="toggleComments()" style="background:transparent; color:#e06c75; border:none; font-size:20px; cursor:pointer;">✖</button>
-        </div>
-        <div id="commentsList" class="comments-list"></div>
-    </div>
-
-    <!-- ПІДВАЛ -->
-    <footer class="footer-full">
-        <div class="footer-row">
-            <a href="auth.html" class="btn-dark">Реєстрація / Вхід</a>
-            <a href="shop.html" class="btn-dark">МАГАЗИН</a>
-            <a href="cart.html" class="btn-dark" style="border-color: #a33333;">🛒 КОШИК</a>
-        </div>
-        <div class="footer-row">
-            <a href="#" class="social-btn"><img src="sn_logos/youtube_logo.jpg" alt="YouTube"></a>
-            <a href="#" class="social-btn"><img src="sn_logos/facebook_logo.jpg" alt="Facebook"></a>
-            <a href="#" class="social-btn"><img src="sn_logos/insta_logo.jpg" alt="Instagram"></a>
-            <a href="#" class="social-btn"><img src="sn_logos/tik_tok_logo.jpg" alt="TikTok"></a>
-            <a href="#" class="social-btn"><img src="sn_logos/Telegram_logo.jpg" alt="Telegram"></a>
-        </div>
-        <div class="footer-row">
-            <div class="contact-pill">
-                <div class="messenger-icons">
-                    <img src="sn_logos/viber_logo.jpg" alt="Viber">
-                    <img src="sn_logos/Telegram_logo.jpg" alt="Telegram">
-                    <img src="sn_logos/watsapp_logo.jpg" alt="WhatsApp">
-                </div>
-                <span>+38 (000) 000-00-00</span>
-            </div>
-            <a href="donate.html" class="nav-btn donate-btn">ДОНАТ</a>
-        </div>
-    </footer>
-
-    <!-- ЛАЙТБОКС -->
-    <div id="imageLightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; flex-direction:column; cursor:zoom-out; backdrop-filter: blur(5px);" onclick="closeLightbox()">
-        <span style="position:absolute; top:20px; right:40px; color:#fff; font-size:40px; font-weight:bold; cursor:pointer;">&times;</span>
-        <img id="lightboxImg" style="max-width:90%; max-height:90%; border-radius:8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); object-fit: contain;">
-    </div>
-
-    <!-- СКРИПТИ -->
-    <script>
-        // 1. ДНІ ВІЙНИ
-        const startWar = new Date("2022-02-24");
-        const diffTime = Math.abs(new Date() - startWar);
-        document.getElementById("warDays").innerText = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        // Автоматичне оновлення шапки залежно від авторизації покупця
-        document.addEventListener("DOMContentLoaded", function() {
-            let user = JSON.parse(localStorage.getItem('militaristica_user'));
-            let userZone = document.getElementById('headerUserZone');
-            if (user && user.id && userZone) {
-                userZone.innerHTML = `
-                    <div class="user-logged-panel">
-                        <a href="my_orders.html" class="btn-dark order-btn-mobile" style="border-color: #98c379; color: #98c379;">📦 Мої замовлення</a>
-                        <div class="user-row-mobile">
-                            <a href="profile.html" class="user-pill">
-                                <div class="user-avatar">${user.name ? user.name[0].toUpperCase() : 'U'}</div>
-                                <span>${user.name}</span>
-                            </a>
-                            <button onclick="logout()" class="btn-red logout-btn-mobile">Вийти</button>
-                        </div>
-                    </div>
-                `;
-            }
-        });
-
-        function logout() {
-            localStorage.removeItem('militaristica_user');
-            window.location.reload();
-        }
-
-        // 2. ДИНАМІЧНЕ ЗАВАНТАЖЕННЯ ТАБЛИЦІ ПРОГНОЗУ ВІЙНИ
-        async function loadWarForecast() {
-            try {
-                const response = await fetch('war_forecast_data.json');
-                if (!response.ok) throw new Error('Не вдалося завантажити файл даних');
-                
-                const data = await response.json();
-                const f = data.forecasts;
-                const years = Object.keys(f).sort();
-
-                if (years.length >= 3) {
-                    document.getElementById('th-year-0').innerText = years[0];
-                    document.getElementById('th-year-1').innerText = years[1];
-                    document.getElementById('th-year-2').innerText = years[2];
-
-                    const fmt = (val) => val.toFixed(2) + '%';
-                    const scenarios = [
-                        { key: 'russia_max', label: 'На умовах РФ (4 області + Крим)', color: '#e06c75' },
-                        { key: 'russia_partial', label: 'На умовах РФ (Донбас + Крим)', color: '#d19a66' },
-                        { key: 'frozen', label: 'Заморожування по лінії зіткнення', color: '#e5c07b' },
-                        { key: 'borders_1991', label: 'Відновлення кордонів 1991 року', color: '#98c379' }
-                    ];
-
-                    let tbody = document.getElementById('forecastTableBody');
-                    if (tbody) {
-                        tbody.innerHTML = '';
-                        scenarios.forEach(sc => {
-                            let tr = document.createElement('tr');
-                            let tdLabel = document.createElement('td');
-                            tdLabel.style.fontWeight = '500';
-                            tdLabel.innerText = sc.label;
-                            tr.appendChild(tdLabel);
-
-                            years.forEach((yr, idx) => {
-                                let td = document.createElement('td');
-                                td.style.textAlign = 'center';
-                                td.style.color = sc.color;
-                                if (idx === 0) td.style.fontWeight = 'bold';
-                                let val = f[yr] ? f[yr][sc.key] : 0;
-                                td.innerText = fmt(val);
-                                tr.appendChild(td);
-                            });
-                            tbody.appendChild(tr);
-                        });
-                    }
-                }
-
-                document.getElementById('forecast-date').innerText = 'Оновлено: ' + data.updated_at;
-            } catch (e) {
-                console.error("Помилка завантаження прогнозу:", e);
-                document.getElementById('forecast-date').innerText = 'Дані тимчасово недоступні';
-            }
-        }
-        document.addEventListener('DOMContentLoaded', loadWarForecast);
-
-        // 3. КАТЕГОРІЇ
-        const categoryMap = {
-            "mil_goods": { name: "Військова справа і екіпірування", img: "goods_types/mil_goods.jpg" },
-            "sport_goods": { name: "Спорт і здоров'я", img: "goods_types/sport_goods.jpg" },
-            "tour_goods": { name: "Туризм і походи", img: "goods_types/tour_goods.jpg" },
-            "work_goods": { name: "Інструменти та обладнання", img: "goods_types/work_goods.jpg" },
-            "trans_goods": { name: "Транспорт", img: "goods_types/trans_goods.jpg" },
-            "drone_goods": { name: "Дрони, запчастини", img: "goods_types/drone_goods.jpg" },
-            "com_goods": { name: "Електроніка і зв'язок", img: "goods_types/com_goods.jpg" },
-            "2hetd_goods": { name: "Барахолка", img: "goods_types/2hetd_goods.jpg" }
-        };
-
-        function renderMainCategories() {
-            let container = document.getElementById('mainCategories');
-            if(!container) return;
-            container.innerHTML = ''; 
-            for (const [key, data] of Object.entries(categoryMap)) {
-                container.innerHTML += `
-                    <a href="shop.html?category=${key}" class="category-card">
-                        <div class="category-img"><img src="${data.img}" alt="${data.name}"></div>
-                        <span>${data.name}</span>
-                    </a>
-                `;
-            }
-        }
-        document.addEventListener('DOMContentLoaded', renderMainCategories);
-
-        // 4. МЕНЮ
-        function toggleMenu() {
-            document.getElementById('sideMenu').classList.toggle('open');
-            document.getElementById('menuOverlay').classList.toggle('open');
-        }
-
-        // 5. ЛІЧИЛЬНИКИ КНОПОК
-        function addLike(id) {
-            let el = document.getElementById(id);
-            el.innerText = parseInt(el.innerText) + 1;
-            el.style.color = "#98c379"; 
-            setTimeout(() => el.style.color = "white", 300);
-        }
-
-        // 6. КОМЕНТАРІ
-        let putinComments = [
-            { author: "Солдат Конфуційчук", text: "Абсолютно згоден!" },
-            { author: "Козак", text: "Чекаємо на хороші новини з бункера." },
-            { author: "Гість", text: "Слава ЗСУ!" }
-        ];
-
-        function sendComment() {
-            let input = document.getElementById('putinInput');
-            let text = input.value.trim();
-            
-            if (text !== '') {
-                let user = JSON.parse(localStorage.getItem('militaristica_user'));
-                let userName = user ? user.name : "Гість";
-                
-                putinComments.unshift({ author: userName, text: text });
-                document.getElementById('commentBtn').innerText = `💬 Коментарі (${putinComments.length})`;
-                input.value = '';
-                
-                document.getElementById('commentsPopup').classList.add('open');
-                document.getElementById('commentsOverlay').classList.add('open');
-                renderComments();
-            }
-        }
-
-        function toggleComments() {
-            document.getElementById('commentsPopup').classList.toggle('open');
-            document.getElementById('commentsOverlay').classList.toggle('open');
-            renderComments();
-        }
-
-        function renderComments() {
-            let list = document.getElementById('commentsList');
-            if(!list) return;
-            list.innerHTML = '';
-            putinComments.forEach(c => {
-                list.innerHTML += `
-                    <div class="comment-item">
-                        <div class="comment-author">${c.author}</div>
-                        <div>${c.text}</div>
-                    </div>
-                `;
-            });
-        }
-
-        // 7. РУХОМА ФОТОСТРІЧКА
-        async function loadPhotostrip() {
-            try {
-                let res = await fetch('/api/media');
-                let mediaItems = await res.json();
-                
-                let track = document.getElementById('photoStripTrack');
-                if (!track) return;
-                track.innerHTML = '';
-
-                if (mediaItems.length === 0) {
-                    track.parentElement.style.display = 'none';
-                    return;
-                }
-
-                mediaItems.forEach(item => {
-                    let img = document.createElement('img');
-                    img.src = item.url;
-                    img.onclick = () => openLightbox(item.url);
-                    track.appendChild(img);
-                });
-                mediaItems.forEach(item => {
-                    let img = document.createElement('img');
-                    img.src = item.url;
-                    img.onclick = () => openLightbox(item.url);
-                    track.appendChild(img);
-                });
-            } catch (e) {
-                console.log("Фотострічка не завантажена (офлайн режим)");
-            }
-        }
-        document.addEventListener('DOMContentLoaded', loadPhotostrip);
-
-        function openLightbox(imgSrc) {
-            document.getElementById('lightboxImg').src = imgSrc;
-            document.getElementById('imageLightbox').style.display = 'flex';
-        }
-        function closeLightbox() {
-            document.getElementById('imageLightbox').style.display = 'none';
-        }
-    </script>
-</body>
-</html>
+                    <button onclick="sendComment()" style="background-color: #a33333; border-color: #a33333; padding: 10px
