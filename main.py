@@ -16,6 +16,7 @@ import hashlib
 import jwt
 import base64
 import asyncio
+import calendar
 from contextlib import asynccontextmanager
 
 # ================= НАЛАШТУВАННЯ ================= #
@@ -64,6 +65,55 @@ def verify_token(request: Request):
         return int(payload.get("sub"))
     except Exception:
         raise HTTPException(status_code=401, detail="Токен недійсний або прострочений")
+
+# --- АВТОМАТИЧНИЙ РОЗРАХУНОК ПРОГНОЗУ ВІЙНИ ---
+def update_war_forecast_file():
+    now = datetime.now()
+    current_year = now.year
+    
+    total_days = 366 if calendar.isleap(current_year) else 365
+    day_of_year = now.timetuple().tm_yday
+    days_remaining = max(1, total_days - day_of_year)
+    time_factor = days_remaining / total_days
+
+    forecasts = {}
+    
+    for i in range(3):
+        y = str(current_year + i)
+        if i == 0:
+            r_max = max(1.0, 14.0 * time_factor)
+            r_part = max(2.0, 24.0 * time_factor)
+            frozen = max(5.0, 52.0 * time_factor)
+            borders = max(0.5, 10.0 * time_factor)
+        elif i == 1:
+            r_max = 16.50
+            r_part = 28.50
+            frozen = 45.00
+            borders = 10.00
+        else:
+            r_max = 12.00
+            r_part = 21.00
+            frozen = 54.00
+            borders = 13.00
+            
+        total = r_max + r_part + frozen + borders
+        forecasts[y] = {
+            "russia_max": round((r_max / total) * 100, 2),
+            "russia_partial": round((r_part / total) * 100, 2),
+            "frozen": round((frozen / total) * 100, 2),
+            "borders_1991": round((borders / total) * 100, 2)
+        }
+
+    data = {
+        "updated_at": now.strftime("%Y-%m-%d %H:%M"),
+        "forecasts": forecasts
+    }
+    
+    try:
+        with open("war_forecast_data.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+    except Exception as e:
+        print("Помилка запису war_forecast_data.json:", e)
 
 # --- НАДІЙНА ФУНКЦІЯ ЗАВАНТАЖЕННЯ НА IMGBB (Асинхронна) ---
 async def upload_to_imgbb(file: UploadFile) -> str:
@@ -180,6 +230,11 @@ metadata.create_all(engine)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await database.connect()
+    try:
+        update_war_forecast_file()
+    except Exception as e:
+        print("Помилка автооновлення прогнозу при старті:", e)
+
     try: 
         await database.execute("ALTER TABLE users ADD COLUMN telegram_chat_id TEXT DEFAULT ''")
     except Exception: 
@@ -225,6 +280,12 @@ CATEGORY_PREFIXES = {
     "com_goods": "COM", "2hetd_goods": "SEC"
 }
 
+# Ручне оновлення прогнозу за запитом
+@app.get("/api/update-forecast-manual")
+async def manual_update_forecast():
+    update_war_forecast_file()
+    return {"status": "success", "message": "Прогноз успішно перераховано та оновлено!"}
+
 # --- ЛОГІКА ОНОВЛЕННЯ АКТИВНОСТІ ТА ЗВАННЯ ---
 async def process_user_activity(user_id: int, amount: float):
     user = await database.fetch_one(users.select().where(users.c.id == user_id))
@@ -234,7 +295,6 @@ async def process_user_activity(user_id: int, amount: float):
     current_act = float(user["total_activity"] or 0)
     new_activity = current_act + amount
     
-    # Шукаємо ранг у таблиці ranks
     all_ranks = await database.fetch_all(ranks.select())
     matched_rank_name = "Рекрут"
     commission_rate = 0.0500
@@ -613,7 +673,6 @@ async def create_monobank_invoice(order_id: int):
         "webHookUrl": "https://militaristica.onrender.com/api/webhook/monobank"
     }
     
-    # Гарантуємо, що токен і заголовки складаються лише з ASCII-символів
     safe_token = MONO_TOKEN.strip().encode("ascii", "ignore").decode("ascii")
     
     headers = {
@@ -650,19 +709,16 @@ async def monobank_webhook(request: Request):
             if reference:
                 order = await database.fetch_one(orders.select().where(orders.c.id == int(reference)))
                 if order and order["payment_status"] != "Оплачено":
-                    # Оновлюємо статус замовлення
                     await database.execute(
                         orders.update().where(orders.c.id == int(reference)).values(
                             payment_status="Оплачено", status="Підтверджено"
                         )
                     )
                     
-                    # 1. Зараховуємо активність покупцю (як купівля)
                     buyer_id = order["user_id"]
                     if buyer_id:
                         await process_user_activity(buyer_id, paid_amount)
                         
-                    # 2. Парсимо товари та зараховуємо активність кожному продавцю (як продаж)
                     try:
                         items = json.loads(order["items_json"])
                         for item in items:
@@ -771,7 +827,6 @@ async def serve_product_page_with_og(id: int = 0):
     desc_raw = prod_dict.get('description', '')
     description = f"Ціна: {price}. {desc_raw[:150]}..."
     
-    # ЗАХИСТ ВІД ЛАПОК: замінюємо лапки, щоб вони не ламали HTML-теги Фейсбуку
     safe_title = title.replace('"', '&quot;').replace("'", '&#39;')
     safe_desc = description.replace('"', '&quot;').replace("'", '&#39;')
     canonical_url = f"{BASE_URL}/product.html?id={id}"
