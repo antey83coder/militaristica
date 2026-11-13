@@ -163,23 +163,50 @@
             .footer-full { flex-direction: column; justify-content: center; } 
             .footer-row { justify-content: center; }
 
-            /* --- Додаємо сюди правила для панелі користувача на мобільних --- */
-            #headerUserZone > div {
-                flex-direction: column !important;
-                width: 100% !important;
-                align-items: stretch !important;
-                gap: 8px !important;
+            /* Мобільне оформлення хедера для авторизованого користувача */
+            .header-right {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+                align-items: center;
             }
-            #headerUserZone a, 
-            #headerUserZone button {
-                width: 100% !important;
-                box-sizing: border-box !important;
-                justify-content: center !important;
-                display: flex !important;
+            .header-right > a.btn-dark,
+            .header-right > a.donate-btn {
+                width: 100%;
+                box-sizing: border-box;
+                justify-content: center;
+                display: flex;
             }
-            #headerUserZone .user-pill {
-                justify-content: flex-start !important;
-                padding: 8px 15px !important;
+            .user-logged-panel {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                width: 100%;
+            }
+            .order-btn-mobile {
+                width: 100%;
+                box-sizing: border-box;
+                justify-content: center;
+                display: flex;
+            }
+            .user-row-mobile {
+                display: flex;
+                gap: 8px;
+                width: 100%;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .user-row-mobile .user-pill {
+                flex-grow: 1;
+                overflow: hidden;
+                justify-content: flex-start;
+            }
+            .logout-btn-mobile {
+                padding: 10px 15px !important;
+                font-size: 14px !important;
+                flex-shrink: 0;
+                width: auto !important;
             }
         }
 
@@ -399,13 +426,15 @@
             let userZone = document.getElementById('headerUserZone');
             if (user && user.id && userZone) {
                 userZone.innerHTML = `
-                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                        <a href="my_orders.html" class="btn-dark" style="border-color: #98c379; color: #98c379;">📦 Мої замовлення</a>
-                        <a href="profile.html" class="user-pill">
-                            <div class="user-avatar">${user.name ? user.name[0].toUpperCase() : 'U'}</div>
-                            <span>${user.name}</span>
-                        </a>
-                        <button onclick="logout()" class="btn-red" style="padding: 10px 10px; font-size: 12px;">Вийти</button>
+                    <div class="user-logged-panel">
+                        <a href="my_orders.html" class="btn-dark order-btn-mobile" style="border-color: #98c379; color: #98c379;">📦 Мої замовлення</a>
+                        <div class="user-row-mobile">
+                            <a href="profile.html" class="user-pill">
+                                <div class="user-avatar">${user.name ? user.name[0].toUpperCase() : 'U'}</div>
+                                <span>${user.name}</span>
+                            </a>
+                            <button onclick="logout()" class="btn-red logout-btn-mobile">Вийти</button>
+                        </div>
                     </div>
                 `;
             }
