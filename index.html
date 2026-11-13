@@ -163,13 +163,15 @@
             .footer-full { flex-direction: column; justify-content: center; } 
             .footer-row { justify-content: center; }
 
-            /* Мобільне оформлення хедера для авторизованого користувача */
+            /* Строге мобільне вирівнювання елементів керування в шапці */
             .header-right {
-                display: flex;
                 flex-direction: column;
-                gap: 10px;
+                align-items: stretch;
                 width: 100%;
-                align-items: center;
+            }
+            .header-right > input.search-input {
+                width: 100% !important;
+                box-sizing: border-box;
             }
             .header-right > a.btn-dark,
             .header-right > a.donate-btn {
@@ -178,35 +180,28 @@
                 justify-content: center;
                 display: flex;
             }
-            .user-logged-panel {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
+            #headerUserZone {
                 width: 100%;
             }
-            .order-btn-mobile {
-                width: 100%;
-                box-sizing: border-box;
-                justify-content: center;
-                display: flex;
+            #headerUserZone > div {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                gap: 8px !important;
+                align-items: stretch !important;
             }
-            .user-row-mobile {
-                display: flex;
-                gap: 8px;
-                width: 100%;
-                align-items: center;
-                justify-content: space-between;
+            #headerUserZone > div > a,
+            #headerUserZone > div > button {
+                width: 100% !important;
+                box-sizing: border-box !important;
+                justify-content: center !important;
+                display: flex !important;
             }
-            .user-row-mobile .user-pill {
-                flex-grow: 1;
-                overflow: hidden;
-                justify-content: flex-start;
-            }
-            .logout-btn-mobile {
-                padding: 10px 15px !important;
-                font-size: 14px !important;
-                flex-shrink: 0;
-                width: auto !important;
+            #headerUserZone .user-pill {
+                justify-content: flex-start !important;
+                padding: 6px 15px 6px 6px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
         }
 
@@ -426,15 +421,13 @@
             let userZone = document.getElementById('headerUserZone');
             if (user && user.id && userZone) {
                 userZone.innerHTML = `
-                    <div class="user-logged-panel">
-                        <a href="my_orders.html" class="btn-dark order-btn-mobile" style="border-color: #98c379; color: #98c379;">📦 Мої замовлення</a>
-                        <div class="user-row-mobile">
-                            <a href="profile.html" class="user-pill">
-                                <div class="user-avatar">${user.name ? user.name[0].toUpperCase() : 'U'}</div>
-                                <span>${user.name}</span>
-                            </a>
-                            <button onclick="logout()" class="btn-red logout-btn-mobile">Вийти</button>
-                        </div>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <a href="my_orders.html" class="btn-dark" style="border-color: #98c379; color: #98c379;">📦 Мої замовлення</a>
+                        <a href="profile.html" class="user-pill">
+                            <div class="user-avatar">${user.name ? user.name[0].toUpperCase() : 'U'}</div>
+                            <span>${user.name}</span>
+                        </a>
+                        <button onclick="logout()" class="btn-red" style="padding: 10px 10px; font-size: 12px;">Вийти</button>
                     </div>
                 `;
             }
