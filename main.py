@@ -110,7 +110,6 @@ def update_war_forecast_file():
     for i in range(3):
         y = str(current_year + i)
         if i == 0:
-            # Поточний рік: абсолютні маленькі відсотки (часу майже не лишилося)
             r_max = max(0.15, (11.4 + daily_jitter * 0.35) * current_year_factor)
             r_part = max(0.35, (21.8 + daily_jitter * 0.55) * current_year_factor)
             frozen = max(0.80, (48.6 + market_shift + daily_jitter * 0.8) * current_year_factor)
@@ -123,7 +122,6 @@ def update_war_forecast_file():
                 "borders_1991": round(borders, 2)
             }
         elif i == 1:
-            # Наступний рік: нормалізовані до 100% живі ймовірності
             spillover = (1.0 - raw_ratio) * 6.5
             r_max = 15.84 + daily_jitter * 0.42
             r_part = 27.63 + daily_jitter * 0.61
@@ -138,7 +136,6 @@ def update_war_forecast_file():
                 "borders_1991": round((borders / total) * 100, 2)
             }
         else:
-            # Через рік
             r_max = 11.42 + daily_jitter * 0.31
             r_part = 19.87 + daily_jitter * 0.48
             frozen = 54.36 + market_shift * 0.7
@@ -165,16 +162,14 @@ def update_war_forecast_file():
     except Exception as e:
         print("Помилка запису war_forecast_data.json:", e)
 
-# Фоновий планувальник для автооновлення щодня
 async def daily_forecast_scheduler():
     while True:
-        await asyncio.sleep(6 * 3600)  # Кожні 6 годин
+        await asyncio.sleep(6 * 3600)
         try:
             update_war_forecast_file()
         except Exception as e:
             print("Помилка планувальника прогнозу:", e)
 
-# --- НАДІЙНА ФУНКЦІЯ ЗАВАНТАЖЕННЯ НА IMGBB (Асинхронна) ---
 async def upload_to_imgbb(file: UploadFile) -> str:
     try:
         file_content = await file.read()
@@ -285,12 +280,10 @@ else:
 
 metadata.create_all(engine)
 
-# --- ЖИТТЄВИЙ ЦИКЛ FastAPI ТА ІНІЦІАЛІЗАЦІЯ ЗВАНЬ ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await database.connect()
     
-    # Оновлюємо прогноз при старті та запускаємо фоновий цикл
     try:
         update_war_forecast_file()
         asyncio.create_task(daily_forecast_scheduler())
@@ -311,7 +304,6 @@ async def lifespan(app: FastAPI):
     except Exception: 
         pass
 
-    # Заповнюємо початкові звання ЗСУ та комісії, якщо таблиця порожня
     existing_rank = await database.fetch_one(ranks.select())
     if not existing_rank:
         default_ranks = [
@@ -342,13 +334,11 @@ CATEGORY_PREFIXES = {
     "com_goods": "COM", "2hetd_goods": "SEC"
 }
 
-# Ручне оновлення прогнозу за запитом
 @app.get("/api/update-forecast-manual")
 async def manual_update_forecast():
     update_war_forecast_file()
     return {"status": "success", "message": "Прогноз успішно перераховано та оновлено!"}
 
-# --- ЛОГІКА ОНОВЛЕННЯ АКТИВНОСТІ ТА ЗВАННЯ ---
 async def process_user_activity(user_id: int, amount: float):
     user = await database.fetch_one(users.select().where(users.c.id == user_id))
     if not user:
@@ -579,8 +569,19 @@ async def add_product(
 
     selected_cats = [c.strip() for c in categories.split(",") if c.strip()]
     main_prefix = CATEGORY_PREFIXES.get(selected_cats[0], "GEN") if selected_cats else "GEN"
-    current_count = await database.fetch_val(sqlalchemy.select(sqlalchemy.func.count()).select_from(products).where(products.c.sku.like(f"{main_prefix}-%"))) or 0
-    auto_sku = f"{main_prefix}-{current_count + 1:04d}"
+    
+    # Виправляємо автогенерацію SKU: шукаємо максимальний номер для цього префікса у базі даних
+    existing_skus = await database.fetch_all(products.select().where(products.c.sku.like(f"{main_prefix}-%")))
+    max_num = 0
+    for row in existing_skus:
+        sku_val = row["sku"]
+        try:
+            num_part = int(sku_val.split("-")[1])
+            if num_part > max_num:
+                max_num = num_part
+        except (IndexError, ValueError):
+            continue
+    auto_sku = f"{main_prefix}-{max_num + 1:04d}"
 
     saved_images = []
     for f in files:
